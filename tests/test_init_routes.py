@@ -36,8 +36,7 @@ class InitRoutesTestCase(TestCase):
             flumodel.save()
         response = self.client().get('/')
         result = response.data
-        self.assertEqual(result, b'[{"name": "Test Model", "sourceType": "google", "displayModel": true, "datapoints": '
-                                 b'[{"score_date": "Fri, 29 Jun 2018 00:00:00 GMT", "score_value": 1.23}]}]')
+        self.assertEqual(result, b'[{"name": "Test Model", "sourceType": "google", "displayModel": true, "parameters": {"georegion": "e", "smoothing": 1}, "datapoints": [{"score_date": "Fri, 29 Jun 2018 00:00:00 GMT", "score_value": 1.23}]}]')
         self.assertEqual(response.status_code, 200)
 
     def test_get_models(self):

@@ -21,6 +21,15 @@ class FluModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def get_model_parameters(self):
+        """Parse this model's data attribute and return a dict"""
+        if self.source_type in ['google', 'twitter']:
+            matlab_function, average_window_size = self.calculation_parameters.split(',')
+            return {
+                'matlab_function': matlab_function,
+                'average_window_size': int(average_window_size)
+            }
+
     @staticmethod
     def get_all_public():
         return FluModel.query.filter_by(is_public=True).all()

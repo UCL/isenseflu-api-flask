@@ -32,10 +32,12 @@ def create_app(config_name):
                         'score_value': score.score_value
                     }
                     datapoint.append(child)
+                model_parameters = flu_model.get_model_parameters()
                 obj = {
                     'name': flu_model.name,
                     'sourceType': flu_model.source_type,
                     'displayModel': flu_model.is_displayed,
+                    'parameters': {'georegion': 'e', 'smoothing': model_parameters['average_window_size']},
                     'datapoints': datapoint
                 }
                 results.append(obj)
