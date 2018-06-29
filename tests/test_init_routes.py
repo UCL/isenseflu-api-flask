@@ -5,8 +5,8 @@ from app import create_app, db
 from app.models import FluModel, ModelScore
 
 
-class GoogleTestCase(TestCase):
-    """Test case for the Google blueprint"""
+class InitRoutesTestCase(TestCase):
+    """Test case for the app routes (app.__init__)"""
 
     def setUp(self):
         self.app = create_app(config_name='testing')
@@ -53,3 +53,6 @@ class GoogleTestCase(TestCase):
         result = response.data
         self.assertEqual(result, b'[{"id": 1, "name": "Test Model"}]')
         self.assertEqual(response.status_code, 200)
+
+    def tearDown(self):
+        db.drop_all(app=self.app)
