@@ -41,6 +41,23 @@ def create_app(config_name):
                 results.append(obj)
             return results, status.HTTP_200_OK
 
+    @app.route('/models', methods=['GET'])
+    def models_route():
+        flu_models = FluModel.get_all_public()
+        if flu_models is None:
+            return '', status.HTTP_503_SERVICE_UNAVAILABLE
+        elif not flu_models:
+            return '', status.HTTP_204_NO_CONTENT
+        else:
+            results = []
+            for flu_model in flu_models:
+                obj = {
+                    'id': flu_model.id,
+                    'name': flu_model.name
+                }
+                results.append(obj)
+            return results, status.HTTP_200_OK
+
     from .google import google_blueprint
     app.register_blueprint(google_blueprint)
 

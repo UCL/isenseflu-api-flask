@@ -9,9 +9,7 @@ migrate = Migrate()
 
 config_name = os.getenv('APP_CONFIG', 'development')
 app = create_app(config_name)
-with app.app_context():
-    migrate.init_app(app, db)
-    db.create_all()
+migrate.init_app(app, db)
 
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)

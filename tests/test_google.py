@@ -11,8 +11,7 @@ class GoogleTestCase(TestCase):
     def setUp(self):
         self.app = create_app(config_name='testing')
         self.client = self.app.test_client
-        with self.app.app_context():
-            db.create_all()
+        db.create_all(app=self.app)
 
     def test_get_root_no_models(self):
         response = self.client().get('/')
@@ -33,14 +32,24 @@ class GoogleTestCase(TestCase):
         datapoint.calculation_timestamp = datetime.now()
         datapoint.score_value = '1.23'
         flumodel.model_scores = [datapoint]
-        flumodel.save()
+        with self.app.app_context():
+            flumodel.save()
         response = self.client().get('/')
         result = response.data
-        print(result)
+        self.assertEqual(result, b'[{"name": "Test Model", "sourceType": "google", "displayModel": true, "datapoints": '
+                                 b'[{"score_date": "Fri, 29 Jun 2018 00:00:00 GMT", "score_value": 1.23}]}]')
         self.assertEqual(response.status_code, 200)
 
-    def tearDown(self):
+    def test_get_models(self):
+        flumodel = FluModel()
+        flumodel.name = 'Test Model'
+        flumodel.is_public = True
+        flumodel.is_displayed = True
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
         with self.app.app_context():
-            db.session.close()
-            db.session.remove()
-            db.drop_all()
+            flumodel.save()
+        response = self.client().get('/models')
+        result = response.data
+        self.assertEqual(result, b'[{"id": 1, "name": "Test Model"}]')
+        self.assertEqual(response.status_code, 200)
