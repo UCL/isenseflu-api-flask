@@ -1,7 +1,7 @@
 import os
 import unittest
 from flask_script import Manager
-from flask_migrate import Migrate
+from flask_migrate import Migrate, MigrateCommand
 
 from app import create_app, db
 
@@ -13,8 +13,8 @@ with app.app_context():
     migrate.init_app(app, db)
     db.create_all()
 
-manager = Manager(app, db)
-manager.add_command('db', Migrate)
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
 
 @manager.command
