@@ -1,3 +1,7 @@
+"""
+Commandline options for database management and testing
+"""
+
 import os
 import unittest
 from flask_script import Manager
@@ -5,17 +9,17 @@ from flask_migrate import Migrate, MigrateCommand
 
 from app import create_app, db
 
-migrate = Migrate()
+MIGRATE = Migrate()
 
-config_name = os.getenv('APP_CONFIG', 'development')
-app = create_app(config_name)
-migrate.init_app(app, db)
+CONFIG_NAME = os.getenv('APP_CONFIG', 'development')
+APP = create_app(CONFIG_NAME)
+MIGRATE.init_app(APP, db)
 
-manager = Manager(app)
-manager.add_command('db', MigrateCommand)
+MANAGER = Manager(APP)
+MANAGER.add_command('db', MigrateCommand)
 
 
-@manager.command
+@MANAGER.command
 def test():
     """Runs the unit tests without test coverage."""
     tests = unittest.TestLoader().discover('./tests', pattern='test*.py')
@@ -26,4 +30,4 @@ def test():
 
 
 if __name__ == '__main__':
-    manager.run()
+    MANAGER.run()
