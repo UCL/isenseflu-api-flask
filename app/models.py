@@ -34,6 +34,10 @@ class FluModel(db.Model):
     def get_all_public():
         return FluModel.query.filter_by(is_public=True).all()
 
+    @staticmethod
+    def get_model_for_id(id):
+        return FluModel.query.filter_by(id=id).first()
+
     def __repr__(self):
         return '<Model %s>' % self.name
 
@@ -46,6 +50,14 @@ class ModelScore(db.Model):
     score_value = db.Column(db.Float, nullable=False)
 
     flu_model_id = db.Column(db.Integer, db.ForeignKey('model.id'), primary_key=True)
+
+    @staticmethod
+    def get_scores_for_dates(model_id, start_date, end_date):
+        return ModelScore.query.filter(
+            ModelScore.flu_model_id==model_id,
+            ModelScore.score_date>=start_date,
+            ModelScore.score_date<=end_date
+        ).all()
 
     def __repr__(self):
         return '<ModelScore %s %s %f>' % (

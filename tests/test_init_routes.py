@@ -28,7 +28,7 @@ class InitRoutesTestCase(TestCase):
         flumodel.calculation_parameters = 'matlab_model,1'
         datapoint = ModelScore()
         datapoint.region = 'e'
-        datapoint.score_date = date.today()
+        datapoint.score_date = date(2018, 6, 29)
         datapoint.calculation_timestamp = datetime.now()
         datapoint.score_value = '1.23'
         flumodel.model_scores = [datapoint]
@@ -52,6 +52,32 @@ class InitRoutesTestCase(TestCase):
         result = response.data
         self.assertEqual(result, b'[{"id": 1, "name": "Test Model"}]')
         self.assertEqual(response.status_code, 200)
+
+    def test_get_scores_for_modelId(self):
+        flumodel = FluModel()
+        flumodel.name = 'Test Model'
+        flumodel.is_public = True
+        flumodel.is_displayed = True
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
+        dates = [date(2018, 3, 20), date(2018, 5, 20), date(2018, 6, 20)]
+        datapoints = []
+        for d in dates:
+            entry = ModelScore()
+            entry.region = 'e'
+            entry.score_date = d
+            entry.calculation_timestamp = datetime.now()
+            entry.score_value = '1.23'
+            datapoints.append(entry)
+        flumodel.model_scores = datapoints
+        with self.app.app_context():
+            flumodel.save()
+        response = self.client().get('/scores/1', data={'startDate': '2018-05-30', 'endDate': '2018-06-30'})
+        result = response.data
+        self.assertEqual(result, b'{"name": "Test Model", "sourceType": "google", "displayModel": true, "parameters": {"georegion": "e", "smoothing": 1}, "datapoints": [{"score_date": "Wed, 20 Jun 2018 00:00:00 GMT", "score_value": 1.23}]}')
+        self.assertEqual(response.status_code, 200)
+        response = self.client().get('/scores/1', data={'startDate': '2018-07-30', 'endDate': '2018-06-30'})
+        self.assertEqual(response.status_code, 400)
 
     def tearDown(self):
         db.drop_all(app=self.app)
