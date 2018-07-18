@@ -1,7 +1,7 @@
 from unittest import TestCase
 from datetime import date, datetime
 
-from app import create_app, db
+from app import create_app, DB
 from app.models import FluModel, ModelScore
 
 
@@ -11,7 +11,7 @@ class InitRoutesTestCase(TestCase):
     def setUp(self):
         self.app = create_app(config_name='testing')
         self.client = self.app.test_client
-        db.create_all(app=self.app)
+        DB.create_all(app=self.app)
 
     def test_get_root_no_models(self):
         response = self.client().get('/')
@@ -80,4 +80,4 @@ class InitRoutesTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def tearDown(self):
-        db.drop_all(app=self.app)
+        DB.drop_all(app=self.app)

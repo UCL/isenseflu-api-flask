@@ -1,25 +1,32 @@
-from app import db
+"""
+Data model used by the app (SQLAlchemy is used as ORM)
+"""
+
+from app import DB
 
 
-class FluModel(db.Model):
+class FluModel(DB.Model):
+    """
+    ORM Model representing a Flu Model
+    """
 
     __tablename__ = 'model'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, unique=True, nullable=False)
-    source_type = db.Column(db.Text, nullable=False)
-    is_public = db.Column(db.Boolean, nullable=False)
-    is_displayed = db.Column(db.Boolean, nullable=False)
-    calculation_parameters = db.Column(db.Text, nullable=True)
-    model_scores = db.relationship('ModelScore')
+    id = DB.Column(DB.Integer, primary_key=True)
+    name = DB.Column(DB.String, unique=True, nullable=False)
+    source_type = DB.Column(DB.Text, nullable=False)
+    is_public = DB.Column(DB.Boolean, nullable=False)
+    is_displayed = DB.Column(DB.Boolean, nullable=False)
+    calculation_parameters = DB.Column(DB.Text, nullable=True)
+    model_scores = DB.relationship('ModelScore')
 
     def save(self):
-        db.session.add(self)
-        db.session.commit()
+        DB.session.add(self)
+        DB.session.commit()
 
     def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+        DB.session.delete(self)
+        DB.session.commit()
 
     def get_model_parameters(self):
         """Parse this model's data attribute and return a dict"""
@@ -42,21 +49,31 @@ class FluModel(db.Model):
         return '<Model %s>' % self.name
 
 
-class ModelScore(db.Model):
+class ModelScore(DB.Model):
+    """
+    ORM Model representing a data point of a model score
+    """
 
-    calculation_timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
-    score_date = db.Column(db.Date, primary_key=True)
-    region = db.Column(db.Text, primary_key=True)
-    score_value = db.Column(db.Float, nullable=False)
+    calculation_timestamp = DB.Column(DB.DateTime, default=DB.func.current_timestamp())
+    score_date = DB.Column(DB.Date, primary_key=True)
+    region = DB.Column(DB.Text, primary_key=True)
+    score_value = DB.Column(DB.Float, nullable=False)
 
-    flu_model_id = db.Column(db.Integer, db.ForeignKey('model.id'), primary_key=True)
+    flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
 
     @staticmethod
     def get_scores_for_dates(model_id, start_date, end_date):
+        """
+
+        :param model_id:
+        :param start_date:
+        :param end_date:
+        :return:
+        """
         return ModelScore.query.filter(
-            ModelScore.flu_model_id==model_id,
-            ModelScore.score_date>=start_date,
-            ModelScore.score_date<=end_date
+            ModelScore.flu_model_id == model_id,
+            ModelScore.score_date >= start_date,
+            ModelScore.score_date <= end_date
         ).all()
 
     def __repr__(self):
@@ -64,22 +81,28 @@ class ModelScore(db.Model):
             self.day.strftime('%Y-%m-%d'), self.region, self.value)
 
 
-class GoogleScore(db.Model):
+class GoogleScore(DB.Model):
+    """
+    ORM Model representing a data point of a score retrieved from Google Health Trends private API
+    """
 
-    retrieval_timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
-    score_date = db.Column(db.Date, primary_key=True)
-    score_value = db.Column(db.Float, nullable=False)
-    term_id = db.Column(db.Integer, db.ForeignKey('google_term.id'), primary_key=True)
+    retrieval_timestamp = DB.Column(DB.DateTime, default=DB.func.current_timestamp())
+    score_date = DB.Column(DB.Date, primary_key=True)
+    score_value = DB.Column(DB.Float, nullable=False)
+    term_id = DB.Column(DB.Integer, DB.ForeignKey('google_term.id'), primary_key=True)
 
     def __repr__(self):
         return '<GoogleScore %s %f>' % (
             self.day.strftime('%Y-%m-%d'), self.value)
 
 
-class GoogleTerm(db.Model):
+class GoogleTerm(DB.Model):
+    """
+    ORM Model representing a term used in querying Google Health Trends API
+    """
 
-    id = db.Column(db.Integer, primary_key=True)
-    term = db.Column(db.Text, unique=True, index=True, nullable=False)
+    id = DB.Column(DB.Integer, primary_key=True)
+    term = DB.Column(DB.Text, unique=True, index=True, nullable=False)
 
     def __repr__(self):
         return '<GoogleTerm %s>' % self.term
