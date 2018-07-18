@@ -21,10 +21,12 @@ class FluModel(DB.Model):
     model_scores = DB.relationship('ModelScore')
 
     def save(self):
+        """ Convenience method to save current instance """
         DB.session.add(self)
         DB.session.commit()
 
     def delete(self):
+        """ Convenience method to delete current instance """
         DB.session.delete(self)
         DB.session.commit()
 
@@ -36,13 +38,16 @@ class FluModel(DB.Model):
                 'matlab_function': matlab_function,
                 'average_window_size': int(average_window_size)
             }
+        return None
 
     @staticmethod
     def get_all_public():
+        """ Returns all public models """
         return FluModel.query.filter_by(is_public=True).all()
 
     @staticmethod
     def get_model_for_id(id):
+        """ Searches a model by its id """
         return FluModel.query.filter_by(id=id).first()
 
     def __repr__(self):
