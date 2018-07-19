@@ -5,6 +5,26 @@ Data model used by the app (SQLAlchemy is used as ORM)
 from app import DB
 
 
+def get_flu_model_for_id(model_id):
+    """ Searches a model by its id """
+    return FluModel.query.filter_by(id=model_id).first()
+
+
+def get_public_flu_models():
+    """ Returns all public models """
+    return FluModel.query.filter_by(is_public=True).all()
+
+
+def has_model(model_id):
+    """ Checks if the model exists """
+    return DB.session.query(FluModel.query.filter_by(id=model_id).exists()).scalar()
+
+
+def get_last_score_date(model_id):
+    """ Returns the last score date for a particular model """
+    return ModelScore.query.filter_by(flu_model_id=model_id).order_by(ModelScore.score_date.desc()).first().score_date
+
+
 class FluModel(DB.Model):
     """
     ORM Model representing a Flu Model
