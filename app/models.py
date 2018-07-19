@@ -46,9 +46,9 @@ class FluModel(DB.Model):
         return FluModel.query.filter_by(is_public=True).all()
 
     @staticmethod
-    def get_model_for_id(id):
+    def get_model_for_id(model_id):
         """ Searches a model by its id """
-        return FluModel.query.filter_by(id=id).first()
+        return FluModel.query.filter_by(id=model_id).first()
 
     def __repr__(self):
         return '<Model %s>' % self.name
@@ -68,13 +68,7 @@ class ModelScore(DB.Model):
 
     @staticmethod
     def get_scores_for_dates(model_id, start_date, end_date):
-        """
-
-        :param model_id:
-        :param start_date:
-        :param end_date:
-        :return:
-        """
+        """ Returns a list of model scores for a model id, start and end date """
         return ModelScore.query.filter(
             ModelScore.flu_model_id == model_id,
             ModelScore.score_date >= start_date,
