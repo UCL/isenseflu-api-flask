@@ -111,7 +111,4 @@ def create_app(config_name):
         }
         return result, status.HTTP_200_OK
 
-    from .google import google_blueprint
-    app.register_blueprint(google_blueprint)
-
     return app
