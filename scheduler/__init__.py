@@ -1,8 +1,13 @@
+"""
+ Background tasks controlled by a scheduler
+"""
+
 import logging
+
+from datetime import date, timedelta
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import date, timedelta
 from flask_api import FlaskAPI
 
 from app.models import has_model, get_last_score_date
@@ -13,12 +18,16 @@ logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 
 class Scheduler(object):
+    """
+    Manages an instance of apscheduler
+    """
 
     def __init__(self, app: FlaskAPI = None):
         self.flask_app = app
         self.scheduler = BlockingScheduler()
 
     def run_model(self, model_id: int, crontab: str):
+        """ Adds the calculattion of model scores for an id to the scheduler """
         with self.flask_app.app_context():
             if not has_model(model_id):
                 raise ValueError('Could not find model with that ID')
