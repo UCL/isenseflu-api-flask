@@ -4,6 +4,7 @@
 
 from datetime import date, datetime
 from unittest import TestCase
+from unittest.mock import patch
 
 from app import create_app, DB
 from app.models import FluModel, ModelScore
@@ -29,6 +30,10 @@ class SchedulerTestCase(TestCase):
                 scheduler.run_model(1, None)
 
     def test_run_model(self):
+        """
+        Given FluModel can be found
+        Then Scheduler executes run_model for that particular FluModel id
+        """
         flumodel = FluModel()
         flumodel.id = 1
         flumodel.name = 'Test Model'
@@ -44,8 +49,12 @@ class SchedulerTestCase(TestCase):
         flumodel.model_scores = [datapoint]
         with self.app.app_context():
             flumodel.save()
-            scheduler = Scheduler(self.app)
-            scheduler.run_model(flumodel.id, "* * * * *")
+            with patch.object(Scheduler, '__init__', return_value=None):
+                scheduler = Scheduler()
+                scheduler.flask_app = self.app
+                from apscheduler.schedulers.background import BackgroundScheduler
+                scheduler.scheduler = BackgroundScheduler()
+                scheduler.run_model(flumodel.id, "* * * * *")
 
     def tearDown(self):
         DB.drop_all(app=self.app)
