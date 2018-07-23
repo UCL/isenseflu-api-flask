@@ -2,6 +2,8 @@
 Data model used by the app (SQLAlchemy is used as ORM)
 """
 
+from datetime import date
+
 from app import DB
 
 
@@ -23,6 +25,10 @@ def has_model(model_id):
 def get_last_score_date(model_id):
     """ Returns the last score date for a particular model """
     return ModelScore.query.filter_by(flu_model_id=model_id).order_by(ModelScore.score_date.desc()).first().score_date
+
+
+def has_missing_google_scores(model_id: int, start: date, end: date) -> list:
+    pass
 
 
 class FluModel(DB.Model):
@@ -125,3 +131,8 @@ class GoogleTerm(DB.Model):
 
     def __repr__(self):
         return '<GoogleTerm %s>' % self.term
+
+
+class FluModelGoogleTerm(DB.Model):
+    flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
+    google_term_id = DB.Column(DB.Integer, DB.ForeignKey('google_term.id'), primary_key=True)
