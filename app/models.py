@@ -17,17 +17,21 @@ def get_public_flu_models():
     return FluModel.query.filter_by(is_public=True).all()
 
 
-def has_model(model_id):
+def has_model(model_id) -> bool:
     """ Checks if the model exists """
     return DB.session.query(FluModel.query.filter_by(id=model_id).exists()).scalar()
 
 
-def get_last_score_date(model_id):
+def get_last_score_date(model_id) -> DB.Date:
     """ Returns the last score date for a particular model """
-    return ModelScore.query.filter_by(flu_model_id=model_id).order_by(ModelScore.score_date.desc()).first().score_date
+    return ModelScore.query.filter_by(flu_model_id=model_id)\
+        .order_by(ModelScore.score_date.desc())\
+        .first()\
+        .score_date
 
 
 def get_existing_google_dates(model_id: int, start: date, end: date) -> list:
+    """ Returns dates with existing Google terms for a particular model ID between two dates """
     return DB.session.query(GoogleScore.score_date).distinct()\
         .join(GoogleTerm, GoogleScore.term_id == GoogleTerm.id)\
         .join(FluModelGoogleTerm, GoogleTerm.id == FluModelGoogleTerm.google_term_id)\
@@ -122,6 +126,11 @@ class GoogleScore(DB.Model):
     score_value = DB.Column(DB.Float, nullable=False)
     term_id = DB.Column(DB.Integer, DB.ForeignKey('google_term.id'), primary_key=True)
 
+    def save(self):
+        """ Convenience method to save current instance """
+        DB.session.add(self)
+        DB.session.commit()
+
     def __repr__(self):
         return '<GoogleScore %s %f>' % (
             self.day.strftime('%Y-%m-%d'), self.value)
@@ -135,10 +144,19 @@ class GoogleTerm(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     term = DB.Column(DB.Text, unique=True, index=True, nullable=False)
 
+    def save(self):
+        """ Convenience method to save current instance """
+        DB.session.add(self)
+        DB.session.commit()
+
     def __repr__(self):
         return '<GoogleTerm %s>' % self.term
 
 
 class FluModelGoogleTerm(DB.Model):
+    """
+    ORM Model representing a link table between FluModel and GoogleTerm
+    """
+
     flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
     google_term_id = DB.Column(DB.Integer, DB.ForeignKey('google_term.id'), primary_key=True)

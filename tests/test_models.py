@@ -38,10 +38,10 @@ class ModelsTestCase(TestCase):
                 google_score.term_id = 1
                 google_score.score_value = 0.1
                 google_score.score_date = date(2018, 1, day)
-                DB.session.add(google_score)
-            DB.session.add(flu_model_google_term)
-            DB.session.add(google_term)
+                google_score.save()
+            google_term.save()
             DB.session.commit()
+            DB.session.add(flu_model_google_term)
             result = get_existing_google_dates(1, date(2018, 1, 1), date(2018, 1, 2))
             self.assertListEqual(result, [(date(2018, 1, 2),)])
 
