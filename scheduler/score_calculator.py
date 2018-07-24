@@ -2,12 +2,13 @@
  Run calculation of Model Scores
 """
 
-import datetime
+from datetime import date
 
-from app.models import get_existing_google_dates
+from .score_query_registry import get_dates_missing_google_score
 
 
-def run(model_id: int, start: datetime.date, end: datetime.date):
-    if get_existing_google_dates(model_id, start, end):
-        return
-    pass
+def run(model_id: int, start: date, end: date):
+    """ Calculate the model score for the date range specified """
+    missing_google_dates = get_dates_missing_google_score(model_id, start, end)
+    if missing_google_dates:
+        pass
