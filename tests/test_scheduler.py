@@ -27,7 +27,7 @@ class SchedulerTestCase(TestCase):
         with self.app.app_context():
             scheduler = Scheduler(self.app)
             with self.assertRaises(ValueError):
-                scheduler.run_model(1, None)
+                scheduler.run_model(1, '')
 
     def test_run_model(self):
         """

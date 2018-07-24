@@ -27,8 +27,14 @@ def get_last_score_date(model_id):
     return ModelScore.query.filter_by(flu_model_id=model_id).order_by(ModelScore.score_date.desc()).first().score_date
 
 
-def has_missing_google_scores(model_id: int, start: date, end: date) -> list:
-    pass
+def get_existing_google_dates(model_id: int, start: date, end: date) -> list:
+    return DB.session.query(GoogleScore.score_date).distinct()\
+        .join(GoogleTerm, GoogleScore.term_id == GoogleTerm.id)\
+        .join(FluModelGoogleTerm, GoogleTerm.id == FluModelGoogleTerm.google_term_id)\
+        .filter(FluModelGoogleTerm.flu_model_id == model_id)\
+        .filter(GoogleScore.score_date >= start)\
+        .filter(GoogleScore.score_date <= end)\
+        .all()
 
 
 class FluModel(DB.Model):
