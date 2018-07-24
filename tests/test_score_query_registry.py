@@ -6,7 +6,7 @@ from datetime import date
 from unittest import TestCase
 
 from app import create_app, DB
-from app.models import FluModelGoogleTerm, GoogleScore, GoogleTerm
+from app.models import GoogleDate
 from scheduler.score_query_registry import get_dates_missing_google_score
 
 
@@ -27,22 +27,13 @@ class ScoreQueryRegistryTestCase(TestCase):
         When start = '2018-01-01' and end = '2018-01-05'
         Then the list contains '2018-01-01' and '2018-01-04'
         """
-        flu_model_google_term = FluModelGoogleTerm()
-        flu_model_google_term.flu_model_id = 1
-        flu_model_google_term.google_term_id = 1
-        google_term = GoogleTerm()
-        google_term.id = 1
-        google_term.term = 'Flu'
         with self.app.app_context():
             for day in (2, 3, 5):
-                google_score = GoogleScore()
-                google_score.term_id = 1
-                google_score.score_value = 0.1
-                google_score.score_date = date(2018, 1, day)
-                google_score.save()
-            google_term.save()
-            DB.session.commit()
-            DB.session.add(flu_model_google_term)
+                google_date = GoogleDate()
+                google_date.flu_model_id = 1
+                google_date.score_date = date(2018, 1, day)
+                google_date.save()
+            google_date.save()
             result = get_dates_missing_google_score(1, date(2018, 1, 1), date(2018, 1, 5))
             self.assertListEqual(result, [date(2018, 1, 1), date(2018, 1, 4)])
 

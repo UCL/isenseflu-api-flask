@@ -12,7 +12,7 @@ def get_flu_model_for_id(model_id):
     return FluModel.query.filter_by(id=model_id).first()
 
 
-def get_public_flu_models():
+def get_public_flu_models() -> list:
     """ Returns all public models """
     return FluModel.query.filter_by(is_public=True).all()
 
@@ -32,12 +32,10 @@ def get_last_score_date(model_id) -> DB.Date:
 
 def get_existing_google_dates(model_id: int, start: date, end: date) -> list:
     """ Returns dates with existing Google terms for a particular model ID between two dates """
-    return DB.session.query(GoogleScore.score_date).distinct()\
-        .join(GoogleTerm, GoogleScore.term_id == GoogleTerm.id)\
-        .join(FluModelGoogleTerm, GoogleTerm.id == FluModelGoogleTerm.google_term_id)\
-        .filter(FluModelGoogleTerm.flu_model_id == model_id)\
-        .filter(GoogleScore.score_date >= start)\
-        .filter(GoogleScore.score_date <= end)\
+    return DB.session.query(GoogleDate.score_date).distinct()\
+        .filter(GoogleDate.flu_model_id == model_id)\
+        .filter(GoogleDate.score_date >= start)\
+        .filter(GoogleDate.score_date <= end)\
         .all()
 
 
@@ -122,9 +120,9 @@ class GoogleScore(DB.Model):
     """
 
     retrieval_timestamp = DB.Column(DB.DateTime, default=DB.func.current_timestamp())
-    score_date = DB.Column(DB.Date, primary_key=True)
-    score_value = DB.Column(DB.Float, nullable=False)
+    google_date_id = DB.Column(DB.Integer, DB.ForeignKey('google_date.id'), primary_key=True)
     term_id = DB.Column(DB.Integer, DB.ForeignKey('google_term.id'), primary_key=True)
+    score_value = DB.Column(DB.Float, nullable=False)
 
     def save(self):
         """ Convenience method to save current instance """
@@ -132,8 +130,7 @@ class GoogleScore(DB.Model):
         DB.session.commit()
 
     def __repr__(self):
-        return '<GoogleScore %s %f>' % (
-            self.day.strftime('%Y-%m-%d'), self.value)
+        return '<GoogleScore term_id=%d %f>' % (self.term_id, self.value)
 
 
 class GoogleTerm(DB.Model):
@@ -151,6 +148,29 @@ class GoogleTerm(DB.Model):
 
     def __repr__(self):
         return '<GoogleTerm %s>' % self.term
+
+
+class GoogleDate(DB.Model):
+    """
+    ORM Model representing the date for which a complete set of Google terms for a particular model
+    ID was retrieved. The date here stored assumes the scores for a set of Google terms as a
+    transaction and should always be added to the session after the set of GoogleScores.
+    """
+
+    id = DB.Column(DB.Integer, primary_key=True)
+    flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'))
+    transaction_timestamp = DB.Column(DB.DateTime, default=DB.func.current_timestamp())
+    score_date = DB.Column(DB.Date)
+
+    def save(self):
+        """ Convenience method to save current instance """
+        DB.session.add(self)
+        DB.session.commit()
+
+    def __repr__(self):
+        return '<GoogleDate model_id=%d %s>' % (
+            self.flu_model_id, self.score_date.strftime('%Y-%m-%d')
+        )
 
 
 class FluModelGoogleTerm(DB.Model):

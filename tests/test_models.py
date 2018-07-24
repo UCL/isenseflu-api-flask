@@ -6,7 +6,7 @@ from datetime import date
 from unittest import TestCase
 
 from app import create_app, DB
-from app.models import get_existing_google_dates, FluModelGoogleTerm, GoogleScore, GoogleTerm
+from app.models import get_existing_google_dates, GoogleDate
 
 
 class ModelsTestCase(TestCase):
@@ -26,22 +26,13 @@ class ModelsTestCase(TestCase):
         When model_id = 1, start = '2018-01-01', end = '2018-01-02'
         Then the list contains one tuple for date '2018-01-02'
         """
-        flu_model_google_term = FluModelGoogleTerm()
-        flu_model_google_term.flu_model_id = 1
-        flu_model_google_term.google_term_id = 1
-        google_term = GoogleTerm()
-        google_term.id = 1
-        google_term.term = 'Flu'
         with self.app.app_context():
             for day in (2, 3, 5):
-                google_score = GoogleScore()
-                google_score.term_id = 1
-                google_score.score_value = 0.1
-                google_score.score_date = date(2018, 1, day)
-                google_score.save()
-            google_term.save()
-            DB.session.commit()
-            DB.session.add(flu_model_google_term)
+                google_date = GoogleDate()
+                google_date.flu_model_id = 1
+                google_date.score_date = date(2018, 1, day)
+                google_date.save()
+            google_date.save()
             result = get_existing_google_dates(1, date(2018, 1, 1), date(2018, 1, 2))
             self.assertListEqual(result, [(date(2018, 1, 2),)])
 
