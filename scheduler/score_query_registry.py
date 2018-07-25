@@ -5,7 +5,7 @@
 from datetime import date, timedelta
 from typing import Iterator, List, Tuple
 
-from app.models import get_existing_google_dates, get_google_terms_for_model_id
+from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id
 
 _GOOGLE_TERMS_BATCH_SIZE = 30
 

@@ -11,7 +11,7 @@ from app.models_query_registry import get_existing_google_dates, get_google_term
 
 
 class ModelsTestCase(TestCase):
-    """ Test case for models.py """
+    """ Test case for models_query_registry.py """
 
     def setUp(self):
         self.app = create_app(config_name='testing')

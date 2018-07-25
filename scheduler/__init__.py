@@ -10,7 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from flask_api import FlaskAPI
 
-from app.models import has_model, get_last_score_date
+from app.models_query_registry import has_model, get_last_score_date
 from .score_calculator import run
 
 logging.basicConfig()
