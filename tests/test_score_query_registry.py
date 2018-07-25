@@ -6,8 +6,8 @@ from datetime import date
 from unittest import TestCase
 
 from app import create_app, DB
-from app.models import GoogleDate
-from scheduler.score_query_registry import get_dates_missing_google_score
+from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm
+from scheduler.score_query_registry import get_dates_missing_google_score, get_google_batch
 
 
 class ScoreQueryRegistryTestCase(TestCase):
@@ -47,6 +47,33 @@ class ScoreQueryRegistryTestCase(TestCase):
         with self.app.app_context():
             result = get_dates_missing_google_score(1, date(2018, 1, 1), date(2018, 1, 5))
             self.assertListEqual(result, [])
+
+    def test_get_google_batch(self):
+        """
+        Scenario: Get a generator that returns the list of Google terms and dates to be collected
+        from the API organised in batches of up to 30 terms as per API documentation
+        Given a FluModel with an id value of 1 exists
+        """
+        with self.app.app_context():
+            terms_expected = []
+            for idx in range(31):
+                flu_model_google_term = FluModelGoogleTerm()
+                flu_model_google_term.flu_model_id = 1
+                flu_model_google_term.google_term_id = idx
+                flu_model_google_term.save()
+                google_term = GoogleTerm()
+                google_term.id = idx
+                google_term.term = 'Term %d' % idx
+                terms_expected.append('Term %d' % idx)
+                google_term.save()
+                google_date = GoogleDate()
+                google_date.flu_model_id = 1
+            res_batch, res_date = list(get_google_batch(1, [date(2018, 1, 1)]))[0]
+            self.assertListEqual(res_batch, terms_expected[0:30])
+            self.assertEqual(res_date, date(2018, 1, 1))
+            res_batch, res_date = list(get_google_batch(1, [date(2018, 1, 1)]))[1]
+            self.assertListEqual(res_batch, terms_expected[30:31])
+            self.assertEqual(res_date, date(2018, 1, 1))
 
     def tearDown(self):
         DB.drop_all(app=self.app)

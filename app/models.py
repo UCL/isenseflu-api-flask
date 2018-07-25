@@ -3,6 +3,7 @@ Data model used by the app (SQLAlchemy is used as ORM)
 """
 
 from datetime import date
+from typing import List, Tuple
 
 from app import DB
 
@@ -30,7 +31,7 @@ def get_last_score_date(model_id) -> DB.Date:
         .score_date
 
 
-def get_existing_google_dates(model_id: int, start: date, end: date) -> list:
+def get_existing_google_dates(model_id: int, start: date, end: date) -> List[Tuple[date]]:
     """ Returns dates with existing Google terms for a particular model ID between two dates """
     return DB.session.query(GoogleDate.score_date).distinct()\
         .filter(GoogleDate.flu_model_id == model_id)\
@@ -39,7 +40,7 @@ def get_existing_google_dates(model_id: int, start: date, end: date) -> list:
         .all()
 
 
-def get_google_terms_for_model_id(model_id: int) -> list:
+def get_google_terms_for_model_id(model_id: int) -> List[Tuple[str]]:
     """ Returns Google terms for which a model was created against """
     return DB.session.query(GoogleTerm.term)\
         .join(FluModelGoogleTerm)\
