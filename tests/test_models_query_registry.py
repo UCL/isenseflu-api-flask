@@ -6,8 +6,8 @@ from datetime import date
 from unittest import TestCase
 
 from app import create_app, DB
-from app.models import get_existing_google_dates, get_google_terms_for_model_id, \
-    FluModelGoogleTerm, GoogleDate, GoogleTerm
+from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm
+from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id
 
 
 class ModelsTestCase(TestCase):
