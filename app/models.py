@@ -39,6 +39,14 @@ def get_existing_google_dates(model_id: int, start: date, end: date) -> list:
         .all()
 
 
+def get_google_terms_for_model_id(model_id: int) -> list:
+    """ Returns Google terms for which a model was created against """
+    return DB.session.query(GoogleTerm.term)\
+        .join(FluModelGoogleTerm)\
+        .filter(FluModelGoogleTerm.flu_model_id == model_id)\
+        .all()
+
+
 class FluModel(DB.Model):
     """
     ORM Model representing a Flu Model
@@ -180,3 +188,8 @@ class FluModelGoogleTerm(DB.Model):
 
     flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
     google_term_id = DB.Column(DB.Integer, DB.ForeignKey('google_term.id'), primary_key=True)
+
+    def save(self):
+        """ Convenience method to save current instance """
+        DB.session.add(self)
+        DB.session.commit()
