@@ -7,7 +7,8 @@ from unittest import TestCase
 
 from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm
-from scheduler.score_query_registry import get_dates_missing_google_score, get_google_batch
+from scheduler.score_query_registry import get_dates_missing_google_score, get_google_batch, \
+    get_date_ranges_google_score
 
 
 class ScoreQueryRegistryTestCase(TestCase):
@@ -66,14 +67,36 @@ class ScoreQueryRegistryTestCase(TestCase):
                 google_term.term = 'Term %d' % idx
                 terms_expected.append('Term %d' % idx)
                 google_term.save()
-                google_date = GoogleDate()
-                google_date.flu_model_id = 1
             res_batch, res_date = list(get_google_batch(1, [date(2018, 1, 1)]))[0]
             self.assertListEqual(res_batch, terms_expected[0:30])
             self.assertEqual(res_date, date(2018, 1, 1))
             res_batch, res_date = list(get_google_batch(1, [date(2018, 1, 1)]))[1]
             self.assertListEqual(res_batch, terms_expected[30:31])
             self.assertEqual(res_date, date(2018, 1, 1))
+
+    def test_get_date_ranges_google(self):
+        """
+        Scenario: Get a list of dates with missing Google scores
+        Given a FluModel with an id value of 1 exists
+        And a GoogleTerm with an id value of 1 exists
+        And GoogleScore.score_date for term_id = 1 are '2018-01-02', '2018-01-03', '2018-01-05'
+        When start = '2018-01-01' and end = '2018-01-05'
+        Then the list contains '2018-01-01' and '2018-01-04'
+        """
+        with self.app.app_context():
+            for day in (2, 3, 4, 5, 10):
+                google_date = GoogleDate()
+                google_date.flu_model_id = 1
+                google_date.score_date = date(2018, 1, day)
+                google_date.save()
+            google_date.save()
+            result = get_date_ranges_google_score(1, date(2018, 1, 1), date(2018, 1, 15))
+            expected = [
+                (date(2018, 1, 1), date(2018, 1, 1)),
+                (date(2018, 1, 6), date(2018, 1, 9)),
+                (date(2018, 1, 11), date(2018, 1, 15))
+            ]
+            self.assertListEqual(result, expected)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
