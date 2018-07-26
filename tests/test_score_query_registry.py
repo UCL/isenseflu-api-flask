@@ -51,9 +51,12 @@ class ScoreQueryRegistryTestCase(TestCase):
 
     def test_get_google_batch(self):
         """
-        Scenario: Get a generator that returns the list of Google terms and dates to be collected
-        from the API organised in batches of up to 30 terms as per API documentation
+        Scenario: Get a generator that returns the list of Google terms and date ranges to be
+        collected from the API organised in batches of up to 30 terms as per API documentation
         Given a FluModel with an id value of 1 exists
+        And a list of 31 terms for such FluModel id
+        When querying for a list of missing date ranges
+        Then the generator returns items grouped by term batch and then date range
         """
         with self.app.app_context():
             terms_expected = []
@@ -67,21 +70,30 @@ class ScoreQueryRegistryTestCase(TestCase):
                 google_term.term = 'Term %d' % idx
                 terms_expected.append('Term %d' % idx)
                 google_term.save()
-            res_batch, res_date = list(get_google_batch(1, [date(2018, 1, 1)]))[0]
-            self.assertListEqual(res_batch, terms_expected[0:30])
-            self.assertEqual(res_date, date(2018, 1, 1))
-            res_batch, res_date = list(get_google_batch(1, [date(2018, 1, 1)]))[1]
-            self.assertListEqual(res_batch, terms_expected[30:31])
-            self.assertEqual(res_date, date(2018, 1, 1))
+            missing_dates = [
+                (date(2018, 1, 1), date(2018, 1, 1)),
+                (date(2018, 1, 6), date(2018, 1, 9)),
+                (date(2018, 1, 11), date(2018, 1, 15))
+            ]
+            result = list(get_google_batch(1, missing_dates))
+            terms_grouped = (terms_expected[0:30], terms_expected[30:31])
+            counter = 0
+            for terms_grouped_item in terms_grouped:
+                for missing_dates_tuple in missing_dates:
+                    res_terms, res_start, res_end = result[counter]
+                    self.assertListEqual(res_terms, terms_grouped_item)
+                    self.assertEqual(res_start, missing_dates_tuple[0])
+                    self.assertEqual(res_end, missing_dates_tuple[1])
+                    counter += 1
 
     def test_get_date_ranges_google(self):
         """
-        Scenario: Get a list of dates with missing Google scores
+        Scenario: Get a list of date ranges with missing Google scores
         Given a FluModel with an id value of 1 exists
         And a GoogleTerm with an id value of 1 exists
         And GoogleScore.score_date for term_id = 1 are '2018-01-02', '2018-01-03', '2018-01-05'
         When start = '2018-01-01' and end = '2018-01-05'
-        Then the list contains '2018-01-01' and '2018-01-04'
+        Then the list contains a list of tuples specifying start and end dates
         """
         with self.app.app_context():
             for day in (2, 3, 4, 5, 10):
