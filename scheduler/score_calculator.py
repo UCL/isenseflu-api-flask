@@ -15,5 +15,6 @@ def run(model_id: int, start: date, end: date):
         batch = get_google_batch(model_id, missing_google_dates)
         api_client = GoogleApiClient()
         for terms, start_date, end_date in batch:
+            res_scores = api_client.fetch_google_scores(terms, start_date, end_date)
             print("TEST")
         pass
