@@ -2,7 +2,7 @@
  Collects data from Google Health Trends API
 """
 
-from os import environ
+from os import getenv
 import time
 from typing import List, Dict, Union
 
@@ -15,7 +15,7 @@ SERVICE_VERSION = 'v1beta'
 
 _DISCOVERY_SERVICE_URL = 'https://www.googleapis.com/discovery/v1/apis/trends/v1beta/rest'
 _GEORESTRICTION_REGION = 'GB-ENG'
-_GOOGLE_API_KEY = environ["GOOGLE_API_KEY"]
+_GOOGLE_API_KEY = getenv("GOOGLE_API_KEY", "")
 _ISO_FORMAT = '%Y-%m-%d'
 _TIMELINE_RESOLUTION = 'day'
 
