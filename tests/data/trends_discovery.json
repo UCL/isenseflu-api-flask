@@ -1,0 +1,736 @@
+{
+ "kind": "discovery#restDescription",
+ "etag": "\"J3WqvAcMk4eQjJXvfSI4Yr8VouA/q_Nwhl18Rg9Kpcu8qdPHZ7g9GyQ\"",
+ "discoveryVersion": "v1",
+ "id": "trends:v1beta",
+ "name": "trends",
+ "version": "v1beta",
+ "title": "Trends API",
+ "description": "Access Google Trends' data programatically.",
+ "ownerDomain": "google.com",
+ "ownerName": "Google",
+ "icons": {
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+ },
+ "documentationLink": "https://docs.google.com/document/d/1Ybu3gHUHtcSXXzgDJ-m7PPto9tw0QG8A5oOBsFP2jao/edit?usp=sharing",
+ "protocol": "rest",
+ "baseUrl": "https://www.googleapis.com/trends/v1beta/",
+ "basePath": "/trends/v1beta/",
+ "rootUrl": "https://www.googleapis.com/",
+ "servicePath": "trends/v1beta/",
+ "batchPath": "batch/trends/v1beta",
+ "parameters": {
+  "alt": {
+   "type": "string",
+   "description": "Data format for the response.",
+   "default": "json",
+   "enum": [
+    "json"
+   ],
+   "enumDescriptions": [
+    "Responses with Content-Type of application/json"
+   ],
+   "location": "query"
+  },
+  "fields": {
+   "type": "string",
+   "description": "Selector specifying which fields to include in a partial response.",
+   "location": "query"
+  },
+  "key": {
+   "type": "string",
+   "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+   "location": "query"
+  },
+  "oauth_token": {
+   "type": "string",
+   "description": "OAuth 2.0 token for the current user.",
+   "location": "query"
+  },
+  "prettyPrint": {
+   "type": "boolean",
+   "description": "Returns response with indentations and line breaks.",
+   "default": "true",
+   "location": "query"
+  },
+  "quotaUser": {
+   "type": "string",
+   "description": "An opaque string that represents a user for quota purposes. Must not exceed 40 characters.",
+   "location": "query"
+  },
+  "userIp": {
+   "type": "string",
+   "description": "Deprecated. Please use quotaUser instead.",
+   "location": "query"
+  }
+ },
+ "schemas": {
+  "Average": {
+   "id": "Average",
+   "type": "object",
+   "description": "Normalized average search volume for the given term.",
+   "properties": {
+    "term": {
+     "type": "string",
+     "description": "The term this average value pertains to."
+    },
+    "value": {
+     "type": "number",
+     "description": "A normalized search volume average of the given term.",
+     "format": "double"
+    }
+   }
+  },
+  "GetGraphAveragesResponse": {
+   "id": "GetGraphAveragesResponse",
+   "type": "object",
+   "description": "Overtime Average messages. It's a term: average search volume mapping.",
+   "properties": {
+    "averages": {
+     "type": "array",
+     "description": "Overtime Average messages. It's a term: average search volume mapping.",
+     "items": {
+      "$ref": "Average"
+     }
+    }
+   }
+  },
+  "GetRisingQueriesResponse": {
+   "id": "GetRisingQueriesResponse",
+   "type": "object",
+   "properties": {
+    "item": {
+     "type": "array",
+     "description": "Rising in searches since the previous adjacent period in time.",
+     "items": {
+      "$ref": "GetRisingQueriesResponseItem"
+     }
+    }
+   }
+  },
+  "GetRisingQueriesResponseItem": {
+   "id": "GetRisingQueriesResponseItem",
+   "type": "object",
+   "properties": {
+    "isBreakout": {
+     "type": "boolean",
+     "description": "Field is set to true whenever there is not enough volume in previous searches to calculate the rising percentage, value will be set to double.MAX_VALUE."
+    },
+    "title": {
+     "type": "string",
+     "description": "Related search queries."
+    },
+    "value": {
+     "type": "number",
+     "description": "Percentage of rising searches since the previous time period. for example: 0.35 means 35% rising in searches. If there were close to 0 searches for the term in the previous time range, the value will be Double.MAX_VALUE and considered \"breakout\".",
+     "format": "double"
+    }
+   }
+  },
+  "GetRisingTopicsResponse": {
+   "id": "GetRisingTopicsResponse",
+   "type": "object",
+   "properties": {
+    "item": {
+     "type": "array",
+     "description": "Rising in searches since the previous adjacent period in time.",
+     "items": {
+      "$ref": "GetRisingTopicsResponseItem"
+     }
+    }
+   }
+  },
+  "GetRisingTopicsResponseItem": {
+   "id": "GetRisingTopicsResponseItem",
+   "type": "object",
+   "properties": {
+    "isBreakout": {
+     "type": "boolean",
+     "description": "Field is set to true whenever there is not enough volume in previous searches to calculate the rising percentage, value will be set to double.MAX_VALUE."
+    },
+    "mid": {
+     "type": "string",
+     "description": "Entity mid."
+    },
+    "title": {
+     "type": "string",
+     "description": "Entity name."
+    },
+    "value": {
+     "type": "number",
+     "description": "Percentage of rising searches since the previous time period. for example: 0.35 means 35% rising in searches. If there were close to 0 searches for the term in the previous time range, the value will be Double.MAX_VALUE and considered \"breakout\".",
+     "format": "double"
+    }
+   }
+  },
+  "GetTopQueriesResponse": {
+   "id": "GetTopQueriesResponse",
+   "type": "object",
+   "properties": {
+    "item": {
+     "type": "array",
+     "description": "Top terms that were searched with requested term.",
+     "items": {
+      "$ref": "GetTopQueriesResponseItem"
+     }
+    }
+   }
+  },
+  "GetTopQueriesResponseItem": {
+   "id": "GetTopQueriesResponseItem",
+   "type": "object",
+   "properties": {
+    "title": {
+     "type": "string",
+     "description": "Related search queries."
+    },
+    "value": {
+     "type": "number",
+     "description": "Search volume scaled between 0-100.",
+     "format": "double"
+    }
+   }
+  },
+  "GetTopTopicsResponse": {
+   "id": "GetTopTopicsResponse",
+   "type": "object",
+   "properties": {
+    "item": {
+     "type": "array",
+     "description": "Top terms that were searched with requested term.",
+     "items": {
+      "$ref": "GetTopTopicsResponseItem"
+     }
+    }
+   }
+  },
+  "GetTopTopicsResponseItem": {
+   "id": "GetTopTopicsResponseItem",
+   "type": "object",
+   "properties": {
+    "mid": {
+     "type": "string",
+     "description": "Entity mid."
+    },
+    "title": {
+     "type": "string",
+     "description": "Entity name."
+    },
+    "value": {
+     "type": "number",
+     "description": "Search volume scaled between 0-100.",
+     "format": "double"
+    }
+   }
+  },
+  "Graph": {
+   "id": "Graph",
+   "type": "object",
+   "description": "A Graph is a collection of Graph Lines. Each line corresponds to a single term in the request.",
+   "properties": {
+    "lines": {
+     "type": "array",
+     "description": "A list of graph lines, each corresponding to the search stats of a single term, under the restrictions provided in the query.",
+     "items": {
+      "$ref": "GraphLine"
+     }
+    }
+   }
+  },
+  "GraphLine": {
+   "id": "GraphLine",
+   "type": "object",
+   "description": "A time series for the given term.",
+   "properties": {
+    "points": {
+     "type": "array",
+     "description": "The list of date-value points comprising the graph line.",
+     "items": {
+      "$ref": "GraphPoint"
+     }
+    },
+    "term": {
+     "type": "string",
+     "description": "The term this graph line pertains to."
+    }
+   }
+  },
+  "GraphPoint": {
+   "id": "GraphPoint",
+   "type": "object",
+   "description": "A single point in a time series.",
+   "properties": {
+    "date": {
+     "type": "string",
+     "description": "The date to which this point pertains to."
+    },
+    "value": {
+     "type": "number",
+     "description": "The value of the normalized search volume in this date.",
+     "format": "double"
+    }
+   }
+  },
+  "ListRegionsResponse": {
+   "id": "ListRegionsResponse",
+   "type": "object",
+   "description": "A list of RegionalInterest messages.",
+   "properties": {
+    "regions": {
+     "type": "array",
+     "description": "A list of RegionalInterest messages.",
+     "items": {
+      "$ref": "RegionalInterest"
+     }
+    }
+   }
+  },
+  "RegionalInterest": {
+   "id": "RegionalInterest",
+   "type": "object",
+   "description": "A breakdown of normalized search volume per-term per-region.",
+   "properties": {
+    "regionCode": {
+     "type": "string",
+     "description": "A two-letter region code."
+    },
+    "regionName": {
+     "type": "string",
+     "description": "A human readable region name."
+    },
+    "value": {
+     "type": "number",
+     "description": "The normalized search volume of the given term in this region.",
+     "format": "double"
+    }
+   }
+  },
+  "Timeline": {
+   "id": "Timeline",
+   "type": "object",
+   "description": "A time series for the given term.",
+   "properties": {
+    "points": {
+     "type": "array",
+     "description": "The list of date-value points comprising this line.",
+     "items": {
+      "$ref": "TimelinePoint"
+     }
+    },
+    "term": {
+     "type": "string",
+     "description": "The term this line pertains to."
+    }
+   }
+  },
+  "TimelinePoint": {
+   "id": "TimelinePoint",
+   "type": "object",
+   "description": "A single point in a time series.",
+   "properties": {
+    "date": {
+     "type": "string",
+     "description": "The date to which this point pertains to."
+    },
+    "value": {
+     "type": "number",
+     "description": "The value of the search volume in this date (unscaled).",
+     "format": "double"
+    }
+   }
+  },
+  "Timelines": {
+   "id": "Timelines",
+   "type": "object",
+   "description": "Timelines is a list of lines, where each line corresponds to a single term in the request.",
+   "properties": {
+    "lines": {
+     "type": "array",
+     "description": "A list of lines, each corresponding to the search stats of a single term, under the restrictions provided in the query.",
+     "items": {
+      "$ref": "Timeline"
+     }
+    }
+   }
+  }
+ },
+ "methods": {
+  "getGraph": {
+   "id": "trends.getGraph",
+   "path": "graph",
+   "httpMethod": "GET",
+   "description": "Returns a Graph of search volume per time points, normalized. For better insights, one could provide restrictions for time range, geographic region, etc.",
+   "parameters": {
+    "restrictions.category": {
+     "type": "string",
+     "description": "Please consult with the Trends Explore page for possible legal input here. Defaults to 'All Categories' when empty.",
+     "location": "query"
+    },
+    "restrictions.endDate": {
+     "type": "string",
+     "description": "End date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is the current month and year.",
+     "location": "query"
+    },
+    "restrictions.geo": {
+     "type": "string",
+     "description": "Please refer to the ISO-3166-2 for the supported values.",
+     "location": "query"
+    },
+    "restrictions.property": {
+     "type": "string",
+     "description": "The Google property of interest. Options are images/news/froogle(Shopping)/youtube, web is the default.",
+     "location": "query"
+    },
+    "restrictions.startDate": {
+     "type": "string",
+     "description": "Start date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is 2004-01.",
+     "location": "query"
+    },
+    "terms": {
+     "type": "string",
+     "description": "Search terms the user wishes to compare/explore.",
+     "repeated": true,
+     "location": "query"
+    }
+   },
+   "response": {
+    "$ref": "Graph"
+   }
+  },
+  "getGraphAverages": {
+   "id": "trends.getGraphAverages",
+   "path": "graphAverages",
+   "httpMethod": "GET",
+   "description": "Returns the averages of normalized search volume for the given terms. For better insights, one could provide restrictions for time range, geographic region, etc.",
+   "parameters": {
+    "restrictions.category": {
+     "type": "string",
+     "description": "Please consult with the Trends Explore page for possible legal input here. Defaults to 'All Categories' when empty.",
+     "location": "query"
+    },
+    "restrictions.endDate": {
+     "type": "string",
+     "description": "End date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is the current month and year.",
+     "location": "query"
+    },
+    "restrictions.geo": {
+     "type": "string",
+     "description": "Please refer to the ISO-3166-2 for the supported values.",
+     "location": "query"
+    },
+    "restrictions.property": {
+     "type": "string",
+     "description": "The Google property of interest. Options are images/news/froogle(Shopping)/youtube, web is the default.",
+     "location": "query"
+    },
+    "restrictions.startDate": {
+     "type": "string",
+     "description": "Start date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is 2004-01.",
+     "location": "query"
+    },
+    "terms": {
+     "type": "string",
+     "description": "Search terms the user wishes to compare/explore.",
+     "repeated": true,
+     "location": "query"
+    }
+   },
+   "response": {
+    "$ref": "GetGraphAveragesResponse"
+   }
+  },
+  "getRisingQueries": {
+   "id": "trends.getRisingQueries",
+   "path": "risingQueries",
+   "httpMethod": "GET",
+   "description": "Get a list of rising queries that were searched along with the requested term, under the given restrictions.",
+   "parameters": {
+    "restrictions.category": {
+     "type": "string",
+     "description": "Please consult with the Trends Explore page for possible legal input here. Defaults to 'All Categories' when empty.",
+     "location": "query"
+    },
+    "restrictions.endDate": {
+     "type": "string",
+     "description": "End date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is the current month and year.",
+     "location": "query"
+    },
+    "restrictions.geo": {
+     "type": "string",
+     "description": "Please refer to the ISO-3166-2 for the supported values.",
+     "location": "query"
+    },
+    "restrictions.property": {
+     "type": "string",
+     "description": "The Google property of interest. Options are images/news/froogle(Shopping)/youtube, web is the default.",
+     "location": "query"
+    },
+    "restrictions.startDate": {
+     "type": "string",
+     "description": "Start date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is 2004-01.",
+     "location": "query"
+    },
+    "term": {
+     "type": "string",
+     "description": "Term can be either entity (for example /m/0d2p9p) or query.",
+     "required": true,
+     "location": "query"
+    }
+   },
+   "parameterOrder": [
+    "term"
+   ],
+   "response": {
+    "$ref": "GetRisingQueriesResponse"
+   }
+  },
+  "getRisingTopics": {
+   "id": "trends.getRisingTopics",
+   "path": "risingTopics",
+   "httpMethod": "GET",
+   "description": "Get a list of rising topics that were searched along with the requested term, under the given restrictions.",
+   "parameters": {
+    "restrictions.category": {
+     "type": "string",
+     "description": "Please consult with the Trends Explore page for possible legal input here. Defaults to 'All Categories' when empty.",
+     "location": "query"
+    },
+    "restrictions.endDate": {
+     "type": "string",
+     "description": "End date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is the current month and year.",
+     "location": "query"
+    },
+    "restrictions.geo": {
+     "type": "string",
+     "description": "Please refer to the ISO-3166-2 for the supported values.",
+     "location": "query"
+    },
+    "restrictions.property": {
+     "type": "string",
+     "description": "The Google property of interest. Options are images/news/froogle(Shopping)/youtube, web is the default.",
+     "location": "query"
+    },
+    "restrictions.startDate": {
+     "type": "string",
+     "description": "Start date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is 2004-01.",
+     "location": "query"
+    },
+    "term": {
+     "type": "string",
+     "description": "Term can be either entity (for example /m/0d2p9p) or query.",
+     "required": true,
+     "location": "query"
+    }
+   },
+   "parameterOrder": [
+    "term"
+   ],
+   "response": {
+    "$ref": "GetRisingTopicsResponse"
+   }
+  },
+  "getTimelinesForHealth": {
+   "id": "trends.getTimelinesForHealth",
+   "path": "timelinesForHealth",
+   "httpMethod": "GET",
+   "description": "For health research only, fetches a graph of search volumes per time within a set of restrictions. Note the data is sampled and Google can't guarantee the accuracy of the numbers.",
+   "parameters": {
+    "geoRestriction.country": {
+     "type": "string",
+     "description": "Please notice only one field of GeoRestriction should be filled. Country format is ISO-3166-2 (2-letters), e.g. US.",
+     "location": "query"
+    },
+    "geoRestriction.dma": {
+     "type": "string",
+     "description": "Please notice only one field of GeoRestriction should be filled. DMA is nielsen dma id, e.g. 501 (support.google.com/richmedia/answer/2745487).",
+     "location": "query"
+    },
+    "geoRestriction.region": {
+     "type": "string",
+     "description": "Please notice only one field of GeoRestriction should be filled. Region format is ISO-3166-2 (4-letters), e.g. US-NY (see more examples here: en.wikipedia.org/wiki/ISO_3166-2:US)",
+     "location": "query"
+    },
+    "terms": {
+     "type": "string",
+     "description": "Search terms the user wishes to explore. Up to 30 queries can be sent. Term format can be either a query or entity (e.g. /m/0d2p9p) and can include ORs using '+' sign. Example: \"/m/0d2p9p + /m/0nd4ffr + awesomeness\" will return a combined timeline of the three terms (which obviously differ from \"/m/0d2p9p, /m/0nd4ffr, awesomeness\" that returns 3 different timelines.)",
+     "repeated": true,
+     "location": "query"
+    },
+    "time.endDate": {
+     "type": "string",
+     "description": "End date format YYYY-MM-DD e.g. 2010-08-28, default is today.",
+     "location": "query"
+    },
+    "time.startDate": {
+     "type": "string",
+     "description": "Start date format YYYY-MM-DD e.g. 2015-02-16, default is 2004-01-01.",
+     "default": "2004-01-01",
+     "location": "query"
+    },
+    "timelineResolution": {
+     "type": "string",
+     "description": "A value of TimeResolution enum. Week is default.",
+     "default": "week",
+     "enum": [
+      "day",
+      "month",
+      "week",
+      "year"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      ""
+     ],
+     "location": "query"
+    }
+   },
+   "response": {
+    "$ref": "Timelines"
+   }
+  },
+  "getTopQueries": {
+   "id": "trends.getTopQueries",
+   "path": "topQueries",
+   "httpMethod": "GET",
+   "description": "Get a list of top queries that were searched along with the requested term, under the given restrictions.",
+   "parameters": {
+    "restrictions.category": {
+     "type": "string",
+     "description": "Please consult with the Trends Explore page for possible legal input here. Defaults to 'All Categories' when empty.",
+     "location": "query"
+    },
+    "restrictions.endDate": {
+     "type": "string",
+     "description": "End date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is the current month and year.",
+     "location": "query"
+    },
+    "restrictions.geo": {
+     "type": "string",
+     "description": "Please refer to the ISO-3166-2 for the supported values.",
+     "location": "query"
+    },
+    "restrictions.property": {
+     "type": "string",
+     "description": "The Google property of interest. Options are images/news/froogle(Shopping)/youtube, web is the default.",
+     "location": "query"
+    },
+    "restrictions.startDate": {
+     "type": "string",
+     "description": "Start date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is 2004-01.",
+     "location": "query"
+    },
+    "term": {
+     "type": "string",
+     "description": "Term can be either entity (for example /m/0d2p9p) or query.",
+     "required": true,
+     "location": "query"
+    }
+   },
+   "parameterOrder": [
+    "term"
+   ],
+   "response": {
+    "$ref": "GetTopQueriesResponse"
+   }
+  },
+  "getTopTopics": {
+   "id": "trends.getTopTopics",
+   "path": "topTopics",
+   "httpMethod": "GET",
+   "description": "Get a list of top topics that were searched along with the requested term, under the given restrictions.",
+   "parameters": {
+    "restrictions.category": {
+     "type": "string",
+     "description": "Please consult with the Trends Explore page for possible legal input here. Defaults to 'All Categories' when empty.",
+     "location": "query"
+    },
+    "restrictions.endDate": {
+     "type": "string",
+     "description": "End date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is the current month and year.",
+     "location": "query"
+    },
+    "restrictions.geo": {
+     "type": "string",
+     "description": "Please refer to the ISO-3166-2 for the supported values.",
+     "location": "query"
+    },
+    "restrictions.property": {
+     "type": "string",
+     "description": "The Google property of interest. Options are images/news/froogle(Shopping)/youtube, web is the default.",
+     "location": "query"
+    },
+    "restrictions.startDate": {
+     "type": "string",
+     "description": "Start date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is 2004-01.",
+     "location": "query"
+    },
+    "term": {
+     "type": "string",
+     "description": "Term can be either entity (for example /m/0d2p9p) or query.",
+     "required": true,
+     "location": "query"
+    }
+   },
+   "parameterOrder": [
+    "term"
+   ],
+   "response": {
+    "$ref": "GetTopTopicsResponse"
+   }
+  }
+ },
+ "resources": {
+  "regions": {
+   "methods": {
+    "list": {
+     "id": "trends.regions.list",
+     "path": "regions",
+     "httpMethod": "GET",
+     "description": "This would be the data behind the map seen in Regional Interest in http://www.google.com/trends/explore",
+     "parameters": {
+      "restrictions.category": {
+       "type": "string",
+       "description": "Please consult with the Trends Explore page for possible legal input here. Defaults to 'All Categories' when empty.",
+       "location": "query"
+      },
+      "restrictions.endDate": {
+       "type": "string",
+       "description": "End date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is the current month and year.",
+       "location": "query"
+      },
+      "restrictions.geo": {
+       "type": "string",
+       "description": "Please refer to the ISO-3166-2 for the supported values.",
+       "location": "query"
+      },
+      "restrictions.property": {
+       "type": "string",
+       "description": "The Google property of interest. Options are images/news/froogle(Shopping)/youtube, web is the default.",
+       "location": "query"
+      },
+      "restrictions.startDate": {
+       "type": "string",
+       "description": "Start date should be a month and a year in the format YYYY-MM e.g. 2010-01. Default value is 2004-01.",
+       "location": "query"
+      },
+      "term": {
+       "type": "string",
+       "description": "Search terms the user wishes to compare/explore.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "term"
+     ],
+     "response": {
+      "$ref": "ListRegionsResponse"
+     }
+    }
+   }
+  }
+ }
+}
