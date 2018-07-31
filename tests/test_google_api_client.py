@@ -2,7 +2,7 @@
  Tests Google Trends API client
 """
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, time
 from os import path
 from unittest import TestCase
 from unittest.mock import patch
@@ -52,6 +52,7 @@ class GoogleApiClientTestCase(TestCase):
                 requestBuilder=request_builder,
                 cache_discovery=False
             )
+            instance.block_until = None
             terms = ['flu']
             start = date.today() - timedelta(days=5)
             end = start + timedelta(days=1)
@@ -91,6 +92,7 @@ class GoogleApiClientTestCase(TestCase):
                 requestBuilder=request_builder,
                 cache_discovery=False
             )
+            instance.block_until = None
             terms = ['flu']
             start = date.today() - timedelta(days=5)
             end = start + timedelta(days=1)
@@ -98,3 +100,45 @@ class GoogleApiClientTestCase(TestCase):
                 instance.fetch_google_scores(terms, start, end)
             except RuntimeError as runtime_error:
                 self.assertRegex(str(runtime_error), '^dailyLimitExceeded: blocked until ')
+
+    def test_blocked_until(self):
+        """
+        Scenario: Attempt at calling Google API from the same client instance
+        after having reached the limit.
+        Given GoogleApiClient.block_until has been set to tomorrow
+        Then GoogleApiClient#fetch_google_scores() raises a RuntimeError
+        """
+        with patch.object(GoogleApiClient, '__init__', lambda x: None):
+            instance = GoogleApiClient()
+            instance.service = None
+            instance.block_until = datetime.combine(date.today() + timedelta(days=1), time.min)
+            terms = ['flu']
+            start = date.today() - timedelta(days=5)
+            end = start + timedelta(days=1)
+            try:
+                instance.fetch_google_scores(terms, start, end)
+            except RuntimeError as runtime_error:
+                expected = 'API client blocked until %s' % instance.block_until
+                self.assertEqual(str(runtime_error), expected)
+
+    def test_not_accepting_calls(self):
+        """
+        Scenario: Attempt at calling Google API from the same client instance
+        after having reached the limit.
+        Given GoogleApiClient.block_until has been set to tomorrow
+        Then GoogleApiClient#is_accepting_calls() returns False
+        """
+        with patch.object(GoogleApiClient, '__init__', lambda x: None):
+            instance = GoogleApiClient()
+            instance.service = None
+            instance.block_until = datetime.combine(date.today() + timedelta(days=1), time.min)
+            self.assertFalse(instance.is_accepting_calls())
+
+    def test_is_accepting_calls(self):
+        """
+        Scenario: Attempt at calling Google API from a new client instance.
+        Given GoogleApiClient.block_until is not set
+        Then GoogleApiClient#is_accepting_calls() returns True
+        """
+        instance = GoogleApiClient()
+        self.assertTrue(instance.is_accepting_calls())

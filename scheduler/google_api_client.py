@@ -76,6 +76,8 @@ class GoogleApiClient(object):
             }
         ]
         """
+        if not self.is_accepting_calls():
+            raise RuntimeError('API client blocked until %s' % self.block_until)
         graph = self.service.getTimelinesForHealth(
             terms=terms,
             geoRestriction_region=_GEORESTRICTION_REGION,
@@ -87,12 +89,18 @@ class GoogleApiClient(object):
         try:
             response = graph.execute()
             return response['lines']
-        except HttpError as e:
-            code = e.resp['error']['code']
-            reason = e.resp['error']['message']
+        except HttpError as http_error:
+            code = http_error.resp['error']['code']
+            reason = http_error.resp['error']['message']
             if code == 403:
                 if reason == 'dailyLimitExceeded':
                     self.block_until = datetime.combine(date.today() + timedelta(days=1), dtime.min)
                     raise RuntimeError('%s: blocked until %s' % (reason, self.block_until))
                 else:
-                    raise e
+                    raise http_error
+
+    def is_accepting_calls(self):
+        """
+        Displays current status of the client in relation to API limits
+        """
+        return self.block_until is None or self.block_until <= datetime.today()
