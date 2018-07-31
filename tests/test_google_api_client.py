@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from googleapiclient.discovery import build
 from googleapiclient.http import HttpMock, RequestMockBuilder
+from httplib2 import Response
 
 from scheduler.google_api_client import GoogleApiClient, SERVICE_NAME, SERVICE_VERSION
 
@@ -35,7 +36,7 @@ class GoogleApiClientTestCase(TestCase):
         Then client retrieves a JSON object with an element "lines" inside
         """
         http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
-        response = '{"lines": [ { "term" : "a flu" , "points" : [] } ]}'
+        response = b'{"lines": [ { "term" : "a flu" , "points" : [] } ]}'
         request_builder = RequestMockBuilder(
             {
                 'trends.getTimelinesForHealth': (None, response)
@@ -58,3 +59,42 @@ class GoogleApiClientTestCase(TestCase):
             self.assertEqual(len(result), 1)
             self.assertIn('term', result[0])
             self.assertIn('points', result[0])
+
+    def test_403_error(self):
+        """
+        Scenario: Evaluate generation of error raising logic when calls to
+        Google API hit the daily limit.
+        Given a list of terms of type List[str]
+        And start date in ISO format
+        And end date in ISO format
+        When Google API returns HTTP 403
+        Then GoogleApiClient#fetch_google_scores() raises a RuntimeError
+        """
+        http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
+        error = {
+            'code': 403,
+            'message': 'dailyLimitExceeded'
+        }
+        response = Response({'status': 403, 'reason': 'dailyLimitExceeded', 'error': error})
+        request_builder = RequestMockBuilder(
+            {
+                'trends.getTimelinesForHealth': (response, b'{}')
+            }
+        )
+        with patch.object(GoogleApiClient, '__init__', lambda x: None):
+            instance = GoogleApiClient()
+            instance.service = build(
+                serviceName=SERVICE_NAME,
+                version=SERVICE_VERSION,
+                http=http,
+                developerKey='APIKEY',
+                requestBuilder=request_builder,
+                cache_discovery=False
+            )
+            terms = ['flu']
+            start = date.today() - timedelta(days=5)
+            end = start + timedelta(days=1)
+            try:
+                instance.fetch_google_scores(terms, start, end)
+            except RuntimeError as runtime_error:
+                self.assertRegex(str(runtime_error), '^dailyLimitExceeded: blocked until ')
