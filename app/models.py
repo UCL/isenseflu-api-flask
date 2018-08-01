@@ -2,6 +2,8 @@
 Data model used by the app (SQLAlchemy is used as ORM)
 """
 
+from datetime import date
+
 from app import DB
 
 
@@ -86,9 +88,14 @@ class GoogleScore(DB.Model):
     """
 
     retrieval_timestamp = DB.Column(DB.DateTime, default=DB.func.current_timestamp())
-    google_date_id = DB.Column(DB.Integer, DB.ForeignKey('google_date.id'), primary_key=True)
+    score_date = DB.Column(DB.Date, primary_key=True)
     term_id = DB.Column(DB.Integer, DB.ForeignKey('google_term.id'), primary_key=True)
     score_value = DB.Column(DB.Float, nullable=False)
+
+    def __init__(self, term_id: int, score_date: date, score_value: float):
+        self.term_id = term_id
+        self.score_date = score_date
+        self.score_value = score_value
 
     def save(self):
         """ Convenience method to save current instance """
@@ -120,7 +127,7 @@ class GoogleDate(DB.Model):
     """
     ORM Model representing the date for which a complete set of Google terms for a particular model
     ID was retrieved. The date here stored assumes the scores for a set of Google terms as a
-    transaction and should always be added to the session after the set of GoogleScores.
+    transaction and should always be added to the session together with the set of GoogleScores.
     """
 
     id = DB.Column(DB.Integer, primary_key=True)

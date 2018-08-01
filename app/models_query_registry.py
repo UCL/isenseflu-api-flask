@@ -7,7 +7,7 @@ from datetime import date
 from typing import List, Tuple
 
 from app import DB
-from app.models import FluModel, ModelScore, GoogleDate, GoogleTerm, FluModelGoogleTerm
+from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm
 
 
 def get_flu_model_for_id(model_id) -> FluModel:
@@ -48,3 +48,15 @@ def get_google_terms_for_model_id(model_id: int) -> List[Tuple[str]]:
         .join(FluModelGoogleTerm)\
         .filter(FluModelGoogleTerm.flu_model_id == model_id)\
         .all()
+
+
+def set_google_scores_for_term_id(term: str, points: List[Tuple[date, float]]):
+    term_id = GoogleTerm.query.filter_by(term=term).first().id
+    for point in points:
+        entity_exists = GoogleScore.query\
+            .filter(GoogleScore.score_date == point[0])\
+            .filter(GoogleScore.term_id == term_id)
+        if DB.session.query(entity_exists).exists().scalar():
+            google_score = GoogleScore(term_id=term_id, score_date=point[0], score_value=point[1])
+            DB.session.add(google_score)
+    DB.session.commit()
