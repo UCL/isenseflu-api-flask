@@ -4,11 +4,12 @@
 
 from datetime import date
 from unittest import TestCase
+from unittest.mock import call, patch
 
 from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm
 from scheduler.score_query_registry import get_days_missing_google_score, get_google_batch, \
-    get_date_ranges_google_score
+    get_date_ranges_google_score, set_google_scores
 
 
 class ScoreQueryRegistryTestCase(TestCase):
@@ -102,13 +103,59 @@ class ScoreQueryRegistryTestCase(TestCase):
                 google_date.score_date = date(2018, 1, day)
                 google_date.save()
             google_date.save()
-            result = get_date_ranges_google_score(1, date(2018, 1, 1), date(2018, 1, 15))
+            result = get_date_ranges_google_score(1, date(2018, 1, 1), date(2018, 1, 15))[0]
             expected = [
                 (date(2018, 1, 1), date(2018, 1, 1)),
                 (date(2018, 1, 6), date(2018, 1, 9)),
                 (date(2018, 1, 11), date(2018, 1, 15))
             ]
             self.assertListEqual(result, expected)
+
+    def test_set_google_scores(self):
+        """
+        Scenario: Persist a batch of Google score data
+        Given a list of data points containing data for two terms
+        Then function app.models_query_registry#set_google_scores_for_term_id is
+        called twice
+        """
+        data_points = [
+            {
+                'term': 'a flu',
+                'points': [
+                    {
+                        'date': 'Jul 01 2018',
+                        'value': 60.587
+                    },
+                    {
+                        'date': 'Jul 02 2018',
+                        'value': 83.017
+                    }
+                ]
+            },
+            {
+                'term': 'flu season',
+                'points': [
+                    {
+                        'date': 'Jul 01 2018',
+                        'value': 0.0
+                    },
+                    {
+                        'date': 'Jul 02 2018',
+                        'value': 15.144
+                    }
+                ]
+            }
+        ]
+        expected = [
+            ('a flu', [(date(2018, 7, 1), 60.587), (date(2018, 7, 2), 83.017)]),
+            ('flu season', [(date(2018, 7, 1), 0.0), (date(2018, 7, 2), 15.144)])
+        ]
+        with patch('scheduler.score_query_registry.set_google_scores_for_term_id') as patched_f:
+            patched_f.return_value = None
+            set_google_scores(data_points)
+            self.assertEqual(patched_f.call_count, 2)
+            calls = [call(expected[0][0], expected[0][1]), call(expected[1][0], expected[1][1])]
+            patched_f.assert_has_calls(calls)
 
     def tearDown(self):
         DB.drop_all(app=self.app)

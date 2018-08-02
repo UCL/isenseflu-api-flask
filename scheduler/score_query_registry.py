@@ -64,12 +64,16 @@ def get_google_batch(
 def set_google_scores(
         google_scores: List[Dict[str, Union[str, List[Dict[str, Union[str, float]]]]]]
 ):
+    """
+    Iterates through the batch item to reformat the data points from dictionary to a tuple
+    before persisting the data. It parses the data converting it into a datetime.date
+    """
     for batch_item in google_scores:
         points = [
-            (dt.strptime(p['date'], '%b %d %Y').date(), p['value']) for p in google_scores['points']
+            (dt.strptime(p['date'], '%b %d %Y').date(), p['value']) for p in batch_item['points']
         ]
         set_google_scores_for_term_id(batch_item['term'], points)
 
 
-def set_and_get_google_dates(model_id: int, google_dates: List[date]):
+def set_and_verify_google_dates(model_id: int, google_dates: List[date]):
     pass
