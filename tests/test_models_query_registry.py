@@ -8,7 +8,7 @@ from unittest import TestCase
 from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
-    set_google_date_for_model_id
+    set_google_date_for_model_id, set_google_scores_for_term
 
 
 class ModelsTestCase(TestCase):
@@ -57,6 +57,22 @@ class ModelsTestCase(TestCase):
                 expected.append(('Term %d' % i,))
             result = get_google_terms_for_model_id(1)
             self.assertListEqual(result, expected)
+
+    def test_set_google_scores_for_term(self):
+        """
+        Scenario: Persist scores if they are not already in the database
+        Given a Google term with no score value
+        When an entity is saved for that term with a date of 2018-01-01
+        Then the result count for a term of that definition and same date is 1
+        """
+        with self.app.app_context():
+            google_term = GoogleTerm()
+            google_term.id = 1
+            google_term.term = 'Term 1'
+            google_term.save()
+            set_google_scores_for_term('Term 1', [(date(2018, 1, 1), 0.1)])
+            result = GoogleScore.query.filter_by(term_id=1, score_date=date(2018, 1, 1)).count()
+            self.assertEqual(result, 1)
 
     def test_set_google_date_for_model(self):
         """

@@ -50,14 +50,14 @@ def get_google_terms_for_model_id(model_id: int) -> List[Tuple[str]]:
         .all()
 
 
-def set_google_scores_for_term_id(term: str, points: List[Tuple[date, float]]):
+def set_google_scores_for_term(term: str, points: List[Tuple[date, float]]):
     """ Persists score data (date, score) for a particular term """
     term_id = GoogleTerm.query.filter_by(term=term).first().id
     for point in points:
         entity_exists = GoogleScore.query\
             .filter(GoogleScore.score_date == point[0])\
-            .filter(GoogleScore.term_id == term_id)
-        if DB.session.query(entity_exists).exists().scalar():
+            .filter(GoogleScore.term_id == term_id).exists()
+        if not DB.session.query(entity_exists).scalar():
             google_score = GoogleScore(term_id=term_id, score_date=point[0], score_value=point[1])
             DB.session.add(google_score)
     DB.session.commit()

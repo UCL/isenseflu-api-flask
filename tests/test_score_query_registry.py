@@ -146,7 +146,7 @@ class ScoreQueryRegistryTestCase(TestCase):
             ('a flu', [(date(2018, 7, 1), 60.587), (date(2018, 7, 2), 83.017)]),
             ('flu season', [(date(2018, 7, 1), 0.0), (date(2018, 7, 2), 15.144)])
         ]
-        with patch('scheduler.score_query_registry.set_google_scores_for_term_id') as patched_f:
+        with patch('scheduler.score_query_registry.set_google_scores_for_term') as patched_f:
             patched_f.return_value = None
             set_google_scores(data_points)
             self.assertEqual(patched_f.call_count, 2)
