@@ -135,6 +135,10 @@ class GoogleDate(DB.Model):
     transaction_timestamp = DB.Column(DB.DateTime, default=DB.func.current_timestamp())
     score_date = DB.Column(DB.Date)
 
+    def __init__(self, model_id: int, score_date: date):
+        self.flu_model_id = model_id
+        self.score_date = score_date
+
     def save(self):
         """ Convenience method to save current instance """
         DB.session.add(self)

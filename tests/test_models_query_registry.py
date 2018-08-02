@@ -6,8 +6,9 @@ from datetime import date
 from unittest import TestCase
 
 from app import create_app, DB
-from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm
-from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id
+from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm
+from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
+    set_google_date_for_model_id
 
 
 class ModelsTestCase(TestCase):
@@ -28,9 +29,7 @@ class ModelsTestCase(TestCase):
         """
         with self.app.app_context():
             for day in (2, 3, 5):
-                google_date = GoogleDate()
-                google_date.flu_model_id = 1
-                google_date.score_date = date(2018, 1, day)
+                google_date = GoogleDate(1, date(2018, 1, day))
                 google_date.save()
             google_date.save()
             result = get_existing_google_dates(1, date(2018, 1, 1), date(2018, 1, 2))
@@ -58,6 +57,33 @@ class ModelsTestCase(TestCase):
                 expected.append(('Term %d' % i,))
             result = get_google_terms_for_model_id(1)
             self.assertListEqual(result, expected)
+
+    def test_set_google_date_for_model(self):
+        """
+        Scenario: Persist the date of retrieval of a complete set of scores from Google
+        Given a flu model with a set of three terms
+        And a score for each of them for one date
+        Then the date is persisted on the database
+        """
+        with self.app.app_context():
+            for i in range(3):
+                flu_model_google_term = FluModelGoogleTerm()
+                flu_model_google_term.flu_model_id = 1
+                flu_model_google_term.google_term_id = i
+                flu_model_google_term.save()
+                google_term = GoogleTerm()
+                google_term.id = i
+                google_term.term = 'Term %d' % i
+                google_term.save()
+                google_score = GoogleScore(i, date(2018, 1, 1), 0.5 + i)
+                google_score.save()
+            set_google_date_for_model_id(1, date(2018, 1, 1))
+            result = DB.session.query(
+                DB.session.query(GoogleDate).filter_by(flu_model_id=1,
+                                                       score_date=date(2018, 1, 1)
+                                                       ).exists()
+            ).scalar()
+            self.assertTrue(result)
 
     def tearDown(self):
         DB.drop_all(app=self.app)

@@ -51,6 +51,7 @@ def get_google_terms_for_model_id(model_id: int) -> List[Tuple[str]]:
 
 
 def set_google_scores_for_term_id(term: str, points: List[Tuple[date, float]]):
+    """ Persists score data (date, score) for a particular term """
     term_id = GoogleTerm.query.filter_by(term=term).first().id
     for point in points:
         entity_exists = GoogleScore.query\
@@ -60,3 +61,18 @@ def set_google_scores_for_term_id(term: str, points: List[Tuple[date, float]]):
             google_score = GoogleScore(term_id=term_id, score_date=point[0], score_value=point[1])
             DB.session.add(google_score)
     DB.session.commit()
+
+
+def set_google_date_for_model_id(model_id: int, google_date: date):
+    """ Persists the score date if scores have been retrieved successfully for all terms """
+    query_terms = FluModelGoogleTerm.query.filter_by(flu_model_id=model_id).count()
+    query_dates = DB.session.query(GoogleScore.term_id).distinct()\
+        .join(GoogleTerm)\
+        .join(FluModelGoogleTerm)\
+        .filter(FluModelGoogleTerm.flu_model_id == model_id)\
+        .filter(GoogleScore.score_date == google_date)\
+        .count()
+    if query_terms != query_dates:
+        raise ValueError('Terms with missing scores for date %s' % google_date)
+    google_date = GoogleDate(model_id, google_date)
+    google_date.save()

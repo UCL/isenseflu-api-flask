@@ -31,9 +31,7 @@ class ScoreQueryRegistryTestCase(TestCase):
         """
         with self.app.app_context():
             for day in (2, 3, 5):
-                google_date = GoogleDate()
-                google_date.flu_model_id = 1
-                google_date.score_date = date(2018, 1, day)
+                google_date = GoogleDate(1, date(2018, 1, day))
                 google_date.save()
             google_date.save()
             result = get_days_missing_google_score(1, date(2018, 1, 1), date(2018, 1, 5))
@@ -98,9 +96,7 @@ class ScoreQueryRegistryTestCase(TestCase):
         """
         with self.app.app_context():
             for day in (2, 3, 4, 5, 10):
-                google_date = GoogleDate()
-                google_date.flu_model_id = 1
-                google_date.score_date = date(2018, 1, day)
+                google_date = GoogleDate(1, date(2018, 1, day))
                 google_date.save()
             google_date.save()
             result = get_date_ranges_google_score(1, date(2018, 1, 1), date(2018, 1, 15))[0]

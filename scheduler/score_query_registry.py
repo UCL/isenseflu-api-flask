@@ -6,7 +6,7 @@ from datetime import date, datetime as dt, timedelta
 from typing import Dict, Iterator, List, Tuple, Union
 
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
-    set_google_scores_for_term_id
+    set_google_scores_for_term_id, set_google_date_for_model_id
 from .google_batch import GoogleBatch
 
 
@@ -76,4 +76,5 @@ def set_google_scores(
 
 
 def set_and_verify_google_dates(model_id: int, google_dates: List[date]):
-    pass
+    for google_date in google_dates:
+        set_google_date_for_model_id(model_id, google_date)

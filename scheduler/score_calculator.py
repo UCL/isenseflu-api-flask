@@ -7,7 +7,7 @@ from datetime import date
 from .google_api_client import GoogleApiClient
 from .score_query_registry import get_date_ranges_google_score,\
     get_google_batch,\
-    set_and_get_google_dates,\
+    set_and_verify_google_dates,\
     set_google_scores
 
 
@@ -20,4 +20,4 @@ def run(model_id: int, start: date, end: date):
         for terms, start_date, end_date in batch:
             batch_scores = api_client.fetch_google_scores(terms, start_date, end_date)
             set_google_scores(batch_scores)
-        set_and_get_google_dates(model_id, missing_google_list)
+        set_and_verify_google_dates(model_id, missing_google_list)  # Raise an error if missing data
