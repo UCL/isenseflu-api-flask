@@ -35,10 +35,25 @@ class InitRoutesTestCase(TestCase):
         with self.app.app_context():
             flumodel.save()
         response = self.client().get('/')
-        result = response.data
-        self.assertEqual(result, b'[{"name": "Test Model", "sourceType": "google", "displayModel": true, '
-                                 b'"parameters": {"georegion": "e", "smoothing": 1}, "datapoints": [{"score_date": '
-                                 b'"Fri, 29 Jun 2018 00:00:00 GMT", "score_value": 1.23}]}]')
+        result = response.get_json()
+        expected = [
+            {
+                'name': 'Test Model',
+                'sourceType': 'google',
+                'displayModel': True,
+                'parameters': {
+                    'georegion': 'e',
+                    'smoothing': 1
+                },
+                'datapoints': [
+                    {
+                        'score_date': 'Fri, 29 Jun 2018 00:00:00 GMT',
+                        'score_value': 1.23
+                    }
+                ]
+            }
+        ]
+        self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
 
     def test_get_models(self):
@@ -51,11 +66,15 @@ class InitRoutesTestCase(TestCase):
         with self.app.app_context():
             flumodel.save()
         response = self.client().get('/models')
-        result = response.data
-        self.assertEqual(result, b'[{"id": 1, "name": "Test Model"}]')
+        result = response.get_json()
+        expected = [{
+            'id': 1,
+            'name': 'Test Model'
+        }]
+        self.assertEqual(result,  expected)
         self.assertEqual(response.status_code, 200)
 
-    def test_get_scores_for_modelId(self):
+    def test_get_scores_for_model(self):
         flumodel = FluModel()
         flumodel.name = 'Test Model'
         flumodel.is_public = True
@@ -75,10 +94,23 @@ class InitRoutesTestCase(TestCase):
         with self.app.app_context():
             flumodel.save()
         response = self.client().get('/scores/1', data={'startDate': '2018-05-30', 'endDate': '2018-06-30'})
-        result = response.data
-        self.assertEqual(result, b'{"name": "Test Model", "sourceType": "google", "displayModel": true, "parameters": '
-                                 b'{"georegion": "e", "smoothing": 1}, "datapoints": [{"score_date": "Wed, '
-                                 b'20 Jun 2018 00:00:00 GMT", "score_value": 1.23}]}')
+        result = response.get_json()
+        expected = {
+            'name': 'Test Model',
+            'sourceType': 'google',
+            'displayModel': True,
+            'parameters': {
+                'georegion': 'e',
+                'smoothing': 1
+            },
+            'datapoints': [
+                {
+                    'score_date': 'Wed, 20 Jun 2018 00:00:00 GMT',
+                    'score_value': 1.23
+                }
+            ]
+        }
+        self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
         response = self.client().get('/scores/1', data={'startDate': '2018-07-30', 'endDate': '2018-06-30'})
         self.assertEqual(response.status_code, 400)
