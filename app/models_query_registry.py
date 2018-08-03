@@ -4,7 +4,7 @@
 """
 
 from datetime import date
-from typing import List, Tuple
+from typing import Dict, List, Tuple, Union
 
 from app import DB
 from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm
@@ -95,3 +95,10 @@ def set_model_score(model_id: int, score_date: date, score_value: float):
     model_score.score_date = score_date
     model_score.score_value = score_value
     model_score.save()
+
+
+def get_model_function_attr(model_id: int) -> Dict[str, Union[str, int]]:
+    """ Return the model parameters """
+    return FluModel.query.filter_by(id=model_id)\
+        .first()\
+        .get_model_parameters()

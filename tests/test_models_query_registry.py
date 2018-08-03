@@ -6,9 +6,10 @@ from datetime import date
 from unittest import TestCase
 
 from app import create_app, DB
-from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore
+from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore, FluModel
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
-    set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score
+    set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score, \
+    get_model_function_attr
 
 
 class ModelsTestCase(TestCase):
@@ -138,6 +139,27 @@ class ModelsTestCase(TestCase):
                                                        ).exists()
             ).scalar()
             self.assertTrue(result)
+
+    def test_get_model_function_attr(self):
+        """
+        Scenario: Get the model configuration parameters (name of Matlab function and
+        window for calculation of moving averages
+        """
+        with self.app.app_context():
+            flu_model = FluModel()
+            flu_model.id = 1
+            flu_model.name = 'Test model 1'
+            flu_model.source_type = 'google'
+            flu_model.is_public = True
+            flu_model.is_displayed = True
+            flu_model.calculation_parameters = 'matlab_function,1'
+            flu_model.save()
+            result = get_model_function_attr(1)
+            expected = {
+                'matlab_function': 'matlab_function',
+                'average_window_size': 1
+            }
+            self.assertDictEqual(result, expected)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
