@@ -102,3 +102,13 @@ def get_model_function_attr(model_id: int) -> Dict[str, Union[str, int]]:
     return FluModel.query.filter_by(id=model_id)\
         .first()\
         .get_model_parameters()
+
+
+def get_google_terms_and_scores(model_id: int, score_date: date) -> List[Tuple[str, float]]:
+    """ Returns the scores for each term for a date """
+    return DB.session.query(GoogleTerm.term, GoogleScore.score_value)\
+        .join(GoogleScore)\
+        .join(FluModelGoogleTerm)\
+        .filter(GoogleScore.score_date == score_date)\
+        .filter(FluModelGoogleTerm.flu_model_id == model_id)\
+        .all()

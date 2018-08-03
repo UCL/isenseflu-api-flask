@@ -9,7 +9,7 @@ from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore, FluModel
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
     set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score, \
-    get_model_function_attr
+    get_model_function_attr, get_google_terms_and_scores
 
 
 class ModelsTestCase(TestCase):
@@ -160,6 +160,37 @@ class ModelsTestCase(TestCase):
                 'average_window_size': 1
             }
             self.assertDictEqual(result, expected)
+
+    def test_get_google_terms_and_scores(self):
+        """
+        Scenario: Get the Google terms for a model and their scores for a date
+        """
+        with self.app.app_context():
+            for i in range(3):
+                flu_model_google_term = FluModelGoogleTerm()
+                flu_model_google_term.flu_model_id = 1
+                flu_model_google_term.google_term_id = i
+                flu_model_google_term.save()
+                google_term = GoogleTerm()
+                google_term.id = i
+                google_term.term = 'Term %d' % i
+                google_term.save()
+                google_score = GoogleScore(i, date(2018, 1, 1), 0.5 + i)
+                google_score.save()
+            # Additional FluModel to verify the select works as expected
+            flu_model_google_term_2 = FluModelGoogleTerm()
+            flu_model_google_term_2.flu_model_id = 2
+            flu_model_google_term_2.google_term_id = 3
+            flu_model_google_term_2.save()
+            google_term_2 = GoogleTerm()
+            google_term_2.id = 3
+            google_term_2.term = 'Term 3'
+            google_term_2.save()
+            google_score_2 = GoogleScore(3, date(2018, 1, 1), 1.5)
+            google_score_2.save()
+            result = get_google_terms_and_scores(1, date(2018, 1, 1))
+            expected = [('Term 0', 0.5), ('Term 1', 1.5), ('Term 2', 2.5)]
+            self.assertListEqual(result, expected)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
