@@ -4,7 +4,8 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-import tempfile
+from tempfile import NamedTemporaryFile
+from typing import List, Tuple
 
 
 class MatlabType(Enum):
@@ -20,7 +21,10 @@ class BaseMatlab(ABC):
     """
 
     @abstractmethod
-    def calculate_model_score(self, matlab_function, averages):
+    def calculate_model_score(self,
+                              matlab_function: str,
+                              averages: List[Tuple[str, float]]
+                              ) -> float:
         """
         Calculates the model score from a list average reference scores
         It returns a single float corresponding to the score without confidence
@@ -29,7 +33,10 @@ class BaseMatlab(ABC):
         pass
 
     @abstractmethod
-    def calculate_model_score_and_confidence(self, matlab_function, averages):
+    def calculate_model_score_and_confidence(self,
+                                             matlab_function: str,
+                                             averages: List[Tuple[str, float]]
+                                             ) -> Tuple[float, float, float]:
         """
         Calculates the model score from a list average reference scores
         It returns a tuple containing the model sscore followed by the lower
@@ -53,7 +60,10 @@ class LocalMatlab(BaseMatlab):
     def __del__(self):
         self.engine.quit()
 
-    def calculate_model_score(self, matlab_function, averages) -> float:
+    def calculate_model_score(self,
+                              matlab_function: str,
+                              averages: List[Tuple[str, float]]
+                              ) -> float:
         """
         Calculates the model score from a list average reference scores
         It returns a single float corresponding to the score without confidence
@@ -68,7 +78,10 @@ class LocalMatlab(BaseMatlab):
         fhout.close()
         return value
 
-    def calculate_model_score_and_confidence(self, matlab_function, averages):
+    def calculate_model_score_and_confidence(self,
+                                             matlab_function: str,
+                                             averages: List[Tuple[str, float]]
+                                             ) -> Tuple[float, float, float]:
         """
         Calculates the model score from a list average reference scores
         It returns a tuple containing the model sscore followed by the lower
@@ -81,12 +94,12 @@ class LocalMatlab(BaseMatlab):
         value = str(open(fhout.name).read().strip()).split(",")
         fhin.close()
         fhout.close()
-        return value[0], value[1], value[3]
+        return float(value[0]), float(value[1]), float(value[3])
 
     @staticmethod
     def _write_tempfile(averages):
-        fhin = tempfile.NamedTemporaryFile(prefix='fludetector-matlab-input.')
-        fhout = tempfile.NamedTemporaryFile(prefix='fludetector-matlab-output.')
+        fhin = NamedTemporaryFile(prefix='fludetector-matlab-input.')
+        fhout = NamedTemporaryFile(prefix='fludetector-matlab-output.')
         fhin.write('\n'.join('%s,%f' % a for a in averages))
         fhin.flush()
         return fhin, fhout
@@ -97,7 +110,10 @@ class RemoteMatlab(BaseMatlab):
     Interface to a remote installation of MATLAB
     """
 
-    def calculate_model_score(self, matlab_function, averages):
+    def calculate_model_score(self,
+                              matlab_function: str,
+                              averages: List[Tuple[str, float]]
+                              ) -> float:
         """
         Calculates the model score from a list average reference scores
         It returns a single float corresponding to the score without confidence
@@ -105,7 +121,10 @@ class RemoteMatlab(BaseMatlab):
         """
         raise NotImplementedError
 
-    def calculate_model_score_and_confidence(self, matlab_function, averages):
+    def calculate_model_score_and_confidence(self,
+                                             matlab_function: str,
+                                             averages: List[Tuple[str, float]]
+                                             ) -> Tuple[float, float, float]:
         """
         Calculates the model score from a list average reference scores
         It returns a tuple containing the model sscore followed by the lower
