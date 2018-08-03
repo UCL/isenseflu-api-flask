@@ -7,9 +7,9 @@ from unittest import TestCase
 from unittest.mock import call, patch
 
 from app import create_app, DB
-from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm
+from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm, ModelScore
 from scheduler.score_query_registry import get_days_missing_google_score, get_google_batch, \
-    get_date_ranges_google_score, set_google_scores
+    get_date_ranges_google_score, set_google_scores, get_dates_missing_model_score
 
 
 class ScoreQueryRegistryTestCase(TestCase):
@@ -98,7 +98,6 @@ class ScoreQueryRegistryTestCase(TestCase):
             for day in (2, 3, 4, 5, 10):
                 google_date = GoogleDate(1, date(2018, 1, day))
                 google_date.save()
-            google_date.save()
             result = get_date_ranges_google_score(1, date(2018, 1, 1), date(2018, 1, 15))[0]
             expected = [
                 (date(2018, 1, 1), date(2018, 1, 1)),
@@ -152,6 +151,26 @@ class ScoreQueryRegistryTestCase(TestCase):
             self.assertEqual(patched_f.call_count, 2)
             calls = [call(expected[0][0], expected[0][1]), call(expected[1][0], expected[1][1])]
             patched_f.assert_has_calls(calls)
+
+    def test_get_days_missing_model(self):
+        """
+        Scenario: Get the number of days with missing model scores
+        Given a FluModel with an id value of 1 exists
+        And ModelScores with score dates '2018-01-02', '2018-01-03', '2018-01-05'
+        When start = '2018-01-01' and end = '2018-01-05'
+        Then dates missing are '2018-01-01', '2018-01-04'
+        """
+        with self.app.app_context():
+            for day in (2, 3, 5):
+                model_score = ModelScore()
+                model_score.flu_model_id = 1
+                model_score.score_date = date(2018, 1, day)
+                model_score.score_value = 0.1 + day
+                model_score.region = 'e'
+                model_score.save()
+            result = get_dates_missing_model_score(1, date(2018, 1, 1), date(2018, 1, 5))
+            expected = [date(2018, 1, 1), date(2018, 1, 4)]
+            self.assertListEqual(result, expected)
 
     def tearDown(self):
         DB.drop_all(app=self.app)

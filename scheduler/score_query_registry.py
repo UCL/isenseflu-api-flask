@@ -6,7 +6,7 @@ from datetime import date, datetime as dt, timedelta
 from typing import Dict, Iterator, List, Tuple, Union
 
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
-    set_google_scores_for_term, set_google_date_for_model_id
+    set_google_scores_for_term, set_google_date_for_model_id, get_existing_model_dates
 from .google_batch import GoogleBatch
 
 
@@ -76,5 +76,20 @@ def set_google_scores(
 
 
 def set_and_verify_google_dates(model_id: int, google_dates: List[date]):
+    """
+    Persists the date of a complete set of scores if retrieved for all terms in a model
+    """
     for google_date in google_dates:
         set_google_date_for_model_id(model_id, google_date)
+
+
+def get_dates_missing_model_score(model_id: int, start: date, end: date) -> List[date]:
+    """
+    Returns all the dates within a range without a model score.
+    """
+    existing_model_dates = get_existing_model_dates(model_id, start, end)
+    if existing_model_dates:
+        known = [d[0] for d in existing_model_dates]
+        requested = [start + timedelta(days=d) for d in range((end - start).days + 1)]
+        return sorted(set(requested) - set(known))
+    return []

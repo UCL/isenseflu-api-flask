@@ -3,12 +3,14 @@
 """
 
 from datetime import date
+from logging import INFO, log
 
 from .google_api_client import GoogleApiClient
 from .score_query_registry import get_date_ranges_google_score,\
     get_google_batch,\
     set_and_verify_google_dates,\
-    set_google_scores
+    set_google_scores,\
+    get_dates_missing_model_score
 
 
 def run(model_id: int, start: date, end: date):
@@ -21,3 +23,6 @@ def run(model_id: int, start: date, end: date):
             batch_scores = api_client.fetch_google_scores(terms, start_date, end_date)
             set_google_scores(batch_scores)
         set_and_verify_google_dates(model_id, missing_google_list)  # Raise an error if missing data
+    else:
+        log(INFO, 'Google scores have already been collected for this time period')
+    missing_model_scores = get_dates_missing_model_score(model_id, start, end)
