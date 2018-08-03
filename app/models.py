@@ -65,6 +65,8 @@ class ModelScore(DB.Model):
     score_date = DB.Column(DB.Date, primary_key=True)
     region = DB.Column(DB.Text, primary_key=True)
     score_value = DB.Column(DB.Float, nullable=False)
+    confidence_interval_lower = DB.Column(DB.Float, nullable=True)
+    confidence_interval_upper = DB.Column(DB.Float, nullable=True)
 
     flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
 

@@ -3,8 +3,10 @@
  in models.py
 """
 
-from datetime import date
+from datetime import date, timedelta
 from typing import Dict, List, Tuple, Union
+
+from sqlalchemy.sql import func
 
 from app import DB
 from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm
@@ -97,6 +99,23 @@ def set_model_score(model_id: int, score_date: date, score_value: float):
     model_score.save()
 
 
+def set_model_score_confidence_interval(
+        model_id: int,
+        score_date: date,
+        score_value: float,
+        confidence_interval: Tuple[float, float]
+):
+    """ Persists a model score entity including its confidence interval """
+    model_score = ModelScore()
+    model_score.flu_model_id = model_id
+    model_score.region = 'e'  # Default for Google data
+    model_score.score_date = score_date
+    model_score.score_value = score_value
+    model_score.confidence_interval_lower = confidence_interval[0]
+    model_score.confidence_interval_upper = confidence_interval[1]
+    model_score.save()
+
+
 def get_model_function_attr(model_id: int) -> Dict[str, Union[str, int]]:
     """ Return the model parameters """
     return FluModel.query.filter_by(id=model_id)\
@@ -111,4 +130,21 @@ def get_google_terms_and_scores(model_id: int, score_date: date) -> List[Tuple[s
         .join(FluModelGoogleTerm)\
         .filter(GoogleScore.score_date == score_date)\
         .filter(FluModelGoogleTerm.flu_model_id == model_id)\
+        .all()
+
+
+def get_google_terms_and_averages(
+        model_id: int,
+        window_size: int,
+        score_date:date
+) -> List[Tuple[str, float]]:
+    """ Returns the average scores for each term for a date window """
+    start_date = score_date - timedelta(days=window_size)
+    return DB.session.query(GoogleTerm.term, func.avg(GoogleScore.score_value).label('avg_score'))\
+        .join(GoogleScore)\
+        .join(FluModelGoogleTerm)\
+        .filter(GoogleScore.score_date > start_date)\
+        .filter(GoogleScore.score_date <= score_date)\
+        .filter(FluModelGoogleTerm.flu_model_id == model_id)\
+        .group_by(GoogleTerm.term)\
         .all()

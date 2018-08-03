@@ -15,7 +15,7 @@ class MatlabType(Enum):
     LOCAL, REMOTE = range(2)
 
 
-class BaseMatlab(ABC):
+class MatlabClient(ABC):
     """
     Abstract base class to define methods available in MATLAB clients
     """
@@ -45,7 +45,7 @@ class BaseMatlab(ABC):
         pass
 
 
-class LocalMatlab(BaseMatlab):
+class LocalMatlabClient(MatlabClient):
     """
     Interface to a instance of MATLAB running on the same host
     """
@@ -105,7 +105,7 @@ class LocalMatlab(BaseMatlab):
         return fhin, fhout
 
 
-class RemoteMatlab(BaseMatlab):
+class RemoteMatlabClient(MatlabClient):
     """
     Interface to a remote installation of MATLAB
     """
@@ -138,7 +138,7 @@ def build_matlab_client(matlab_type: MatlabType):
     Creates a new instance of the MATLAB client used to calculate model scores
     """
     if matlab_type is MatlabType.LOCAL:
-        return LocalMatlab()
+        return LocalMatlabClient()
     if matlab_type is MatlabType.REMOTE:
-        return RemoteMatlab()
+        return RemoteMatlabClient()
     return None

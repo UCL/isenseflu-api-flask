@@ -26,13 +26,13 @@ def run(model_id: int, start: date, end: date):
         set_and_verify_google_dates(model_id, missing_google_list)  # Raise an error if missing data
     else:
         log(INFO, 'Google scores have already been collected for this time period')
-    missing_model_scores = get_dates_missing_model_score(model_id, start, end)
-    if missing_model_scores:
+    missing_model_dates = get_dates_missing_model_score(model_id, start, end)
+    if missing_model_dates:
         msg_score = None
         msg_date = None
-        for missing_model_score in missing_model_scores:
-            msg_score = set_and_get_model_score(model_id, missing_model_score)
-            msg_date = missing_model_score
+        for missing_model_date in missing_model_dates:
+            msg_score = set_and_get_model_score(model_id, missing_model_date)
+            msg_date = missing_model_date
         if msg_score is not None and msg_date is not None:
             print(msg_score)
     else:
