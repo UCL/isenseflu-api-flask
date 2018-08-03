@@ -8,7 +8,7 @@ OpenAPI 3.0.1 Definition Document: https://github.com/UCL/fludetector-openapi
 
 ## Requirements
 
-- Python 3.6
+- Python 3.5
 - Pip
 - SQLite
 

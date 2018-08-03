@@ -93,3 +93,10 @@ def get_dates_missing_model_score(model_id: int, start: date, end: date) -> List
         requested = [start + timedelta(days=d) for d in range((end - start).days + 1)]
         return sorted(set(requested) - set(known))
     return []
+
+
+def set_and_get_model_score(model_id: int, score_date: date) -> float:
+    """
+    Calculates and persists the model score for a date
+    """
+    return -1
