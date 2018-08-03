@@ -68,6 +68,11 @@ class ModelScore(DB.Model):
 
     flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
 
+    def save(self):
+        """ Convenience method to save current instance """
+        DB.session.add(self)
+        DB.session.commit()
+
     @staticmethod
     def get_scores_for_dates(model_id, start_date, end_date):
         """ Returns a list of model scores for a model id, start and end date """

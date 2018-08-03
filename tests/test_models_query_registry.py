@@ -6,9 +6,9 @@ from datetime import date
 from unittest import TestCase
 
 from app import create_app, DB
-from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm
+from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
-    set_google_date_for_model_id, set_google_scores_for_term
+    set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates
 
 
 class ModelsTestCase(TestCase):
@@ -100,6 +100,25 @@ class ModelsTestCase(TestCase):
                                                        ).exists()
             ).scalar()
             self.assertTrue(result)
+
+    def test_get_existing_model_dates(self):
+        """
+        Scenario: Get list of existing dates from ModelScore
+        Given a ModelScore.flu_model_id value of 1 exists
+        And ModelScore.score_date with values '2018-01-02', '2018-01-03', '2018-01-05'
+        When model_id = 1, start = '2018-01-01', end = '2018-01-02'
+        Then the list contains one tuple for date '2018-01-02'
+        """
+        with self.app.app_context():
+            for day in (2, 3, 5):
+                model_score = ModelScore()
+                model_score.flu_model_id = 1
+                model_score.score_date = date(2018, 1, day)
+                model_score.score_value = 0.1 + day
+                model_score.region = 'e'
+                model_score.save()
+            result = get_existing_model_dates(1, date(2018, 1, 1), date(2018, 1, 2))
+            self.assertListEqual(result, [(date(2018, 1, 2),)])
 
     def tearDown(self):
         DB.drop_all(app=self.app)

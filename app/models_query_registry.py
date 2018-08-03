@@ -34,7 +34,7 @@ def get_last_score_date(model_id) -> DB.Date:
 
 
 def get_existing_google_dates(model_id: int, start: date, end: date) -> List[Tuple[date]]:
-    """ Returns dates with existing Google terms for a particular model ID between two dates """
+    """ Returns dates with existing Google scores for a particular model ID between two dates """
     return DB.session.query(GoogleDate.score_date).distinct()\
         .filter(GoogleDate.flu_model_id == model_id)\
         .filter(GoogleDate.score_date >= start)\
@@ -76,3 +76,12 @@ def set_google_date_for_model_id(model_id: int, google_date: date):
         raise ValueError('Terms with missing scores for date %s' % google_date)
     google_date = GoogleDate(model_id, google_date)
     google_date.save()
+
+
+def get_existing_model_dates(model_id: int, start: date, end: date) -> List[Tuple[date]]:
+    """ Returns dates with existing model scores for a particular model ID between two dates """
+    return DB.session.query(ModelScore.score_date).distinct()\
+        .filter(ModelScore.flu_model_id == model_id)\
+        .filter(ModelScore.score_date >= start)\
+        .filter(ModelScore.score_date <= end)\
+        .all()
