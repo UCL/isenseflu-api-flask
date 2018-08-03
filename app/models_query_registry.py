@@ -85,3 +85,13 @@ def get_existing_model_dates(model_id: int, start: date, end: date) -> List[Tupl
         .filter(ModelScore.score_date >= start)\
         .filter(ModelScore.score_date <= end)\
         .all()
+
+
+def set_model_score(model_id: int, score_date: date, score_value: float):
+    """ Persists a model score entity """
+    model_score = ModelScore()
+    model_score.flu_model_id = model_id
+    model_score.region = 'e'  # Default for Google data
+    model_score.score_date = score_date
+    model_score.score_value = score_value
+    model_score.save()

@@ -8,7 +8,7 @@ from unittest import TestCase
 from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
-    set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates
+    set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score
 
 
 class ModelsTestCase(TestCase):
@@ -119,6 +119,25 @@ class ModelsTestCase(TestCase):
                 model_score.save()
             result = get_existing_model_dates(1, date(2018, 1, 1), date(2018, 1, 2))
             self.assertListEqual(result, [(date(2018, 1, 2),)])
+
+    def test_set_model_score(self):
+        """
+        Scenario: Persist a model score entity
+        Given a flu model with an id of 1
+        And a score date of '2018-01-01'
+        And a score value of float type
+        When the entity is persisted
+        Then a model score with a model id of 1 and score date '2018-01-01' is found
+        in the database
+        """
+        with self.app.app_context():
+            set_model_score(1, date(2018, 1, 1), 0.1)
+            result = DB.session.query(
+                DB.session.query(ModelScore).filter_by(flu_model_id=1,
+                                                       score_date=date(2018, 1, 1)
+                                                       ).exists()
+            ).scalar()
+            self.assertTrue(result)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
