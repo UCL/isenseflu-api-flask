@@ -4,13 +4,14 @@
 
 from datetime import date
 from unittest import TestCase
-from unittest.mock import call, patch
+from unittest.mock import call, patch, Mock
 
 from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore
 from scheduler.score_query_registry import get_days_missing_google_score, get_google_batch, \
     get_date_ranges_google_score, set_google_scores, get_dates_missing_model_score, \
-    set_and_verify_google_dates, get_moving_averages_or_scores
+    set_and_verify_google_dates, get_moving_averages_or_scores, set_and_get_model_score
+from scheduler.matlab_client import MatlabClient
 
 
 class ScoreQueryRegistryTestCase(TestCase):
@@ -218,6 +219,36 @@ class ScoreQueryRegistryTestCase(TestCase):
         with patch('scheduler.score_query_registry.get_google_terms_and_averages') as patched_f2:
             get_moving_averages_or_scores(1, 2, date(2018, 1, 1))
             self.assertEqual(patched_f2.call_count, 1)
+
+    def test_set_and_get_model_score(self):
+        """
+        Scenario: Evaluate whether set_and_get_model_score includes the confidence intervals
+        in the calculation of model scores
+        """
+        matlab_client = Mock(spec=MatlabClient)
+        matlab_client.calculate_model_score.return_value = 1.0
+        matlab_client.calculate_model_score_and_confidence.return_value = (2.0, 0.1, 0.2)
+        with self.app.app_context():
+            result = set_and_get_model_score(
+                model_id=1,
+                matlab_client=matlab_client,
+                matlab_function='matlab_function',
+                google_scores=[('Term 1', 1.0)],
+                score_date=date(2018, 1, 1),
+                with_confidence_interval=False
+            )
+            self.assertEqual(matlab_client.calculate_model_score.call_count, 1)
+            self.assertEqual(result, 1.0)
+            result = set_and_get_model_score(
+                model_id=1,
+                matlab_client=matlab_client,
+                matlab_function='matlab_function',
+                google_scores=[('Term 2', 2.0)],
+                score_date=date(2018, 1, 2),
+                with_confidence_interval=True
+            )
+            self.assertEqual(matlab_client.calculate_model_score_and_confidence.call_count, 1)
+            self.assertEqual(result, 2.0)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
