@@ -10,7 +10,7 @@ from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore
 from scheduler.score_query_registry import get_days_missing_google_score, get_google_batch, \
     get_date_ranges_google_score, set_google_scores, get_dates_missing_model_score, \
-    set_and_verify_google_dates
+    set_and_verify_google_dates, get_moving_averages_or_scores
 
 
 class ScoreQueryRegistryTestCase(TestCase):
@@ -207,6 +207,17 @@ class ScoreQueryRegistryTestCase(TestCase):
                 .exists()
             ).scalar()
             self.assertTrue(result)
+
+    def test_get_moving_averages_or_scores(self):
+        """
+        Scenario: Evaluate whether get_moving_averages_or_scores uses scores or averages
+        """
+        with patch('scheduler.score_query_registry.get_google_terms_and_scores') as patched_f1:
+            get_moving_averages_or_scores(1, 1, date(2018, 1, 1))
+            self.assertEqual(patched_f1.call_count, 1)
+        with patch('scheduler.score_query_registry.get_google_terms_and_averages') as patched_f2:
+            get_moving_averages_or_scores(1, 2, date(2018, 1, 1))
+            self.assertEqual(patched_f2.call_count, 1)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
