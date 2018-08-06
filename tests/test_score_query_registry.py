@@ -175,6 +175,9 @@ class ScoreQueryRegistryTestCase(TestCase):
             result = get_dates_missing_model_score(1, date(2018, 1, 1), date(2018, 1, 5))
             expected = [date(2018, 1, 1), date(2018, 1, 4)]
             self.assertListEqual(result, expected)
+            result = get_dates_missing_model_score(1, date(2018, 1, 6), date(2018, 1, 7))
+            expected = [date(2018, 1, 6), date(2018, 1, 7)]
+            self.assertListEqual(result, expected)
 
     def tearDown(self):
         DB.drop_all(app=self.app)

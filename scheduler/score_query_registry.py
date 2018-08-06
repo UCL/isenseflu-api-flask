@@ -94,11 +94,11 @@ def get_dates_missing_model_score(model_id: int, start: date, end: date) -> List
     Returns all the dates within a range without a model score.
     """
     existing_model_dates = get_existing_model_dates(model_id, start, end)
+    requested = [start + timedelta(days=d) for d in range((end - start).days + 1)]
     if existing_model_dates:
         known = [d[0] for d in existing_model_dates]
-        requested = [start + timedelta(days=d) for d in range((end - start).days + 1)]
         return sorted(set(requested) - set(known))
-    return []
+    return requested
 
 
 def get_moving_averages_or_scores(
