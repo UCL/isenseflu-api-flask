@@ -12,7 +12,7 @@ from app import DB
 from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm
 
 
-def get_flu_model_for_id(model_id) -> FluModel:
+def get_flu_model_for_id(model_id: int) -> FluModel:
     """ Searches a model by its id """
     return FluModel.query.filter_by(id=model_id).first()
 
@@ -20,6 +20,15 @@ def get_flu_model_for_id(model_id) -> FluModel:
 def get_public_flu_models() -> List[FluModel]:
     """ Returns all public models """
     return FluModel.query.filter_by(is_public=True).all()
+
+
+def get_model_scores_for_dates(model_id: int, start_date: date, end_date: date) -> List[ModelScore]:
+    """ Returns a list of model scores for a model id, start and end date """
+    return ModelScore.query.filter(
+        ModelScore.flu_model_id == model_id,
+        ModelScore.score_date >= start_date,
+        ModelScore.score_date <= end_date
+    ).all()
 
 
 def has_model(model_id) -> bool:

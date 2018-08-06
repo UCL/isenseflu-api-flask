@@ -15,7 +15,8 @@ DB = SQLAlchemy()
 def create_app(config_name):
     """ Creates an instance of Flask based on the config name as found in instance/config.py """
 
-    from app.models import FluModel, ModelScore
+    from app.models_query_registry import get_flu_model_for_id, get_public_flu_models, \
+        get_model_scores_for_dates
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -25,7 +26,7 @@ def create_app(config_name):
     @app.route('/', methods=['GET'])
     def root_route():
         """ Default route (/). Returns all public model scores """
-        flu_models = FluModel.get_all_public()
+        flu_models = get_public_flu_models()
         if not flu_models:
             return '', status.HTTP_204_NO_CONTENT
         results = []
@@ -54,7 +55,7 @@ def create_app(config_name):
     @app.route('/models', methods=['GET'])
     def models_route():
         """ Returns a catalogue of public models """
-        flu_models = FluModel.get_all_public()
+        flu_models = get_public_flu_models()
         if not flu_models:
             return '', status.HTTP_204_NO_CONTENT
         results = []
@@ -75,13 +76,13 @@ def create_app(config_name):
         start_date = str(request.data.get('startDate', def_start_date.strftime('%Y-%m-%d')))
         if start_date > end_date:
             return '', status.HTTP_400_BAD_REQUEST
-        flu_model = FluModel.get_model_for_id(id)
+        flu_model = get_flu_model_for_id(id)
         scores = None
         if flu_model is not None:
-            scores = ModelScore.get_scores_for_dates(
+            scores = get_model_scores_for_dates(
                 id,
-                datetime.strptime(start_date, '%Y-%m-%d'),
-                datetime.strptime(end_date, '%Y-%m-%d')
+                datetime.strptime(start_date, '%Y-%m-%d').date(),
+                datetime.strptime(end_date, '%Y-%m-%d').date()
             )
         if scores is None:
             return '', status.HTTP_204_NO_CONTENT

@@ -42,16 +42,6 @@ class FluModel(DB.Model):
             }
         return None
 
-    @staticmethod
-    def get_all_public():
-        """ Returns all public models """
-        return FluModel.query.filter_by(is_public=True).all()
-
-    @staticmethod
-    def get_model_for_id(model_id):
-        """ Searches a model by its id """
-        return FluModel.query.filter_by(id=model_id).first()
-
     def __repr__(self):
         return '<Model %s>' % self.name
 
@@ -74,15 +64,6 @@ class ModelScore(DB.Model):
         """ Convenience method to save current instance """
         DB.session.add(self)
         DB.session.commit()
-
-    @staticmethod
-    def get_scores_for_dates(model_id, start_date, end_date):
-        """ Returns a list of model scores for a model id, start and end date """
-        return ModelScore.query.filter(
-            ModelScore.flu_model_id == model_id,
-            ModelScore.score_date >= start_date,
-            ModelScore.score_date <= end_date
-        ).all()
 
     def __repr__(self):
         return '<ModelScore %s %s %f>' % (
