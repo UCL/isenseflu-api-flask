@@ -105,6 +105,10 @@ class ScoreQueryRegistryTestCase(TestCase):
                 (date(2018, 1, 11), date(2018, 1, 15))
             ]
             self.assertListEqual(result, expected)
+            result = get_date_ranges_google_score(1, date(2018, 1, 2), date(2018, 1, 5))
+            self.assertTupleEqual(result, ([], []))
+            result = get_date_ranges_google_score(1, date(2018, 1, 11), date(2018, 1, 15))[0]
+            self.assertListEqual(result, [(date(2018, 1, 11), date(2018, 1, 15))])
 
     def test_set_google_scores(self):
         """

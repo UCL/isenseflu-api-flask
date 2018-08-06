@@ -36,10 +36,12 @@ def get_date_ranges_google_score(
     It uses sets to remove duplicates
     """
     existing_google_dates = get_existing_google_dates(model_id, start, end)
+    requested = [start + timedelta(days=d) for d in range((end - start).days + 1)]
     if existing_google_dates:
         known = [d[0] for d in existing_google_dates]
-        requested = [start + timedelta(days=d) for d in range((end - start).days + 1)]
         date_list = sorted(set(requested) - set(known))
+        if not date_list:
+            return [], []
         start_id = 0
         date_ranges = []
         for idx in range(len(date_list) - 1):
@@ -48,7 +50,8 @@ def get_date_ranges_google_score(
                 start_id = idx + 1
         date_ranges.append((date_list[start_id], date_list[len(date_list) - 1]))
         return date_ranges, list(date_list)
-    return [], []
+    dates_as_range = [(start, end)]
+    return dates_as_range, requested
 
 
 def get_google_batch(
