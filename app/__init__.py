@@ -3,6 +3,7 @@ Flask app entry point
 """
 
 from datetime import date, timedelta, datetime
+from numbers import Number
 from flask import request
 from flask_api import FlaskAPI, status
 from flask_sqlalchemy import SQLAlchemy
@@ -92,6 +93,13 @@ def create_app(config_name):
                 'score_date': score.score_date,
                 'score_value': score.score_value
             }
+            if isinstance(score.confidence_interval_upper, Number) and \
+                    isinstance(score.confidence_interval_upper, Number):
+                confidence_interval = {
+                    'confidence_interval_upper': score.confidence_interval_upper,
+                    'confidence_interval_lower': score.confidence_interval_lower
+                }
+                child.update(confidence_interval)
             datapoints.append(child)
         model_parameters = flu_model.get_model_parameters()
         result = {
