@@ -8,6 +8,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpMock, RequestMockBuilder
 from httplib2 import Response
 
@@ -100,6 +101,44 @@ class GoogleApiClientTestCase(TestCase):
                 instance.fetch_google_scores(terms, start, end)
             except RuntimeError as runtime_error:
                 self.assertRegex(str(runtime_error), '^dailyLimitExceeded: blocked until ')
+
+    def test_http_error(self):
+        """
+        Scenario: Evaluate generation of error raising logic when calls to
+        Google API returns an error code other than 403.
+        Given a list of terms of type List[str]
+        And start date in ISO format
+        And end date in ISO format
+        When Google API returns an HTTP error code other than 403
+        Then GoogleApiClient#fetch_google_scores() propagates HttpError
+        """
+        http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
+        error = {
+            'code': 400,
+            'message': 'badRequest'
+        }
+        response = Response({'status': 400, 'reason': 'badRequest', 'error': error})
+        request_builder = RequestMockBuilder(
+            {
+                'trends.getTimelinesForHealth': (response, b'{}')
+            }
+        )
+        with patch.object(GoogleApiClient, '__init__', lambda x: None):
+            instance = GoogleApiClient()
+            instance.service = build(
+                serviceName=SERVICE_NAME,
+                version=SERVICE_VERSION,
+                http=http,
+                developerKey='APIKEY',
+                requestBuilder=request_builder,
+                cache_discovery=False
+            )
+            instance.block_until = None
+            terms = ['flu']
+            start = date.today() - timedelta(days=5)
+            end = start + timedelta(days=1)
+            with self.assertRaises(HttpError):
+                instance.fetch_google_scores(terms, start, end)
 
     def test_blocked_until(self):
         """
