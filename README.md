@@ -1,7 +1,5 @@
 # fludetector-api-flask
 
-![coverage](coverage.svg)
-
 ## Background
 
 ### API Specification
@@ -36,4 +34,14 @@ python manage.py db upgrade
 
 ```
 APP_CONFIG=testing python manage.py test
+```
+
+### Test coverage
+
+![coverage](coverage.svg)
+
+```bash
+coverage run --source app,scheduler manage.py test
+coverage html
+coverage-badge -o coverage.svg
 ```
