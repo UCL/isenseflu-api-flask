@@ -232,20 +232,18 @@ class ScoreQueryRegistryTestCase(TestCase):
             result = set_and_get_model_score(
                 model_id=1,
                 matlab_client=matlab_client,
-                matlab_function='matlab_function',
+                matlab_function=('matlab_function', False),
                 google_scores=[('Term 1', 1.0)],
-                score_date=date(2018, 1, 1),
-                with_confidence_interval=False
+                score_date=date(2018, 1, 1)
             )
             self.assertEqual(matlab_client.calculate_model_score.call_count, 1)
             self.assertEqual(result, 1.0)
             result = set_and_get_model_score(
                 model_id=1,
                 matlab_client=matlab_client,
-                matlab_function='matlab_function',
+                matlab_function=('matlab_function', True),
                 google_scores=[('Term 2', 2.0)],
-                score_date=date(2018, 1, 2),
-                with_confidence_interval=True
+                score_date=date(2018, 1, 2)
             )
             self.assertEqual(matlab_client.calculate_model_score_and_confidence.call_count, 1)
             self.assertEqual(result, 2.0)

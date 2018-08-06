@@ -111,25 +111,27 @@ def get_moving_averages_or_scores(
     """
     if avg_window_size == 1:
         return get_google_terms_and_scores(model_id, for_date)
-    else:
-        return get_google_terms_and_averages(model_id, avg_window_size, for_date)
+    return get_google_terms_and_averages(model_id, avg_window_size, for_date)
 
 
 def set_and_get_model_score(
         model_id: int,
         matlab_client: MatlabClient,
-        matlab_function: str,
+        matlab_function: Tuple[str, bool],
         google_scores: List[Tuple[str, float]],
-        score_date: date,
-        with_confidence_interval: bool
+        score_date: date
 ) -> float:
     """
     Calculates and persists the model score for a date
     """
+    with_confidence_interval = matlab_function[1]
     if not with_confidence_interval:
-        score = matlab_client.calculate_model_score(matlab_function, google_scores)
+        score = matlab_client.calculate_model_score(matlab_function[0], google_scores)
         set_model_score(model_id, score_date, score)
         return score
-    score, lower, upper = matlab_client.calculate_model_score_and_confidence(matlab_function, google_scores)
+    score, lower, upper = matlab_client.calculate_model_score_and_confidence(
+        matlab_function[0],
+        google_scores
+    )
     set_model_score_confidence_interval(model_id, score_date, score, (lower, upper))
     return score

@@ -222,7 +222,6 @@ class ModelsTestCase(TestCase):
             google_score_2 = GoogleScore(3, date(2018, 1, 1), 1.5)
             google_score_2.save()
             result = get_google_terms_and_averages(1, 2, date(2018, 1, 2))
-            print(result)
             expected = [('Term 0', 0.3), ('Term 1', 1.3), ('Term 2', 2.3)]
             self.assertListEqual(result, expected)
 
