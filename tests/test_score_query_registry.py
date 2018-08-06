@@ -7,9 +7,10 @@ from unittest import TestCase
 from unittest.mock import call, patch
 
 from app import create_app, DB
-from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm, ModelScore
+from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore
 from scheduler.score_query_registry import get_days_missing_google_score, get_google_batch, \
-    get_date_ranges_google_score, set_google_scores, get_dates_missing_model_score
+    get_date_ranges_google_score, set_google_scores, get_dates_missing_model_score, \
+    set_and_verify_google_dates
 
 
 class ScoreQueryRegistryTestCase(TestCase):
@@ -178,6 +179,34 @@ class ScoreQueryRegistryTestCase(TestCase):
             result = get_dates_missing_model_score(1, date(2018, 1, 6), date(2018, 1, 7))
             expected = [date(2018, 1, 6), date(2018, 1, 7)]
             self.assertListEqual(result, expected)
+
+    def test_set_verify_google_dates(self):
+        """
+        Scenario: Persists the date of a complete set of scores
+        Given FluModel with id = 1 and 3 GoogleTerm entries
+        And each GoogleTerm has a score for '2018-01-01'
+        Then GoogleDate has an entry for FluModel 1 and '2018-01-01'
+        """
+        with self.app.app_context():
+            for idx in range(3):
+                flu_model_google_term = FluModelGoogleTerm()
+                flu_model_google_term.flu_model_id = 1
+                flu_model_google_term.google_term_id = idx
+                flu_model_google_term.save()
+                google_score = GoogleScore(idx, date(2018, 1, 1), 0.1 + idx)
+                google_score.save()
+                google_term = GoogleTerm()
+                google_term.id = idx
+                google_term.term = 'Term %d' % idx
+                google_term.save()
+            set_and_verify_google_dates(1, [date(2018, 1, 1)])
+            result = DB.session.query(
+                DB.session.query(GoogleDate)\
+                .filter(GoogleDate.flu_model_id == 1)\
+                .filter(GoogleDate.score_date == date(2018, 1, 1))\
+                .exists()
+            ).scalar()
+            self.assertTrue(result)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
