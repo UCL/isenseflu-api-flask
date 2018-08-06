@@ -1,5 +1,7 @@
 # fludetector-api-flask
 
+![coverage](coverage.svg)
+
 ## Background
 
 ### API Specification
