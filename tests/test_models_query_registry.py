@@ -9,7 +9,8 @@ from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore, FluModel
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
     set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score, \
-    get_model_function_attr, get_google_terms_and_scores, get_google_terms_and_averages
+    get_model_function_attr, get_google_terms_and_scores, get_google_terms_and_averages, \
+    get_flu_model_for_id, get_public_flu_models
 
 
 class ModelsTestCase(TestCase):
@@ -19,6 +20,42 @@ class ModelsTestCase(TestCase):
         self.app = create_app(config_name='testing')
         self.client = self.app.test_client
         DB.create_all(app=self.app)
+
+    def test_get_flu_model(self):
+        """
+        Scenario: Get a FluModel entity from its id
+        """
+        with self.app.app_context():
+            flu_model = FluModel()
+            flu_model.id = 1
+            flu_model.name = 'Test model 1'
+            flu_model.source_type = 'google'
+            flu_model.is_public = True
+            flu_model.is_displayed = True
+            flu_model.calculation_parameters = 'matlab_function,1'
+            flu_model.save()
+            result = get_flu_model_for_id(1)
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, FluModel)
+
+    def test_get_public_flu_models(self):
+        """
+        Scenario: Retrieve a list of public FluModel entities
+        """
+        with self.app.app_context():
+            for idx in range(1, 3):
+                flu_model = FluModel()
+                flu_model.id = idx
+                flu_model.name = 'Test model %d' % idx
+                flu_model.source_type = 'google'
+                flu_model.is_public = True
+                flu_model.is_displayed = True
+                flu_model.calculation_parameters = 'matlab_function,1'
+                flu_model.save()
+            result = get_public_flu_models()
+            self.assertIsNotNone(result)
+            self.assertEquals(len(result), 2)
+            self.assertIsInstance(result[0], FluModel)
 
     def test_get_existing_google_dates(self):
         """
@@ -101,6 +138,19 @@ class ModelsTestCase(TestCase):
                                                        ).exists()
             ).scalar()
             self.assertTrue(result)
+            """
+            Scenario: Check if ValueError is raised if Google scores are incomplete
+            """
+            flu_model_google_term = FluModelGoogleTerm()
+            flu_model_google_term.flu_model_id = 1
+            flu_model_google_term.google_term_id = 3
+            flu_model_google_term.save()
+            google_term = GoogleTerm()
+            google_term.id = 3
+            google_term.term = 'Term 3'
+            google_term.save()
+            with self.assertRaises(ValueError):
+                set_google_date_for_model_id(1, date(2018, 1, 1))
 
     def test_get_existing_model_dates(self):
         """
