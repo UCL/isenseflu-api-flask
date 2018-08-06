@@ -26,9 +26,7 @@ def create_app(config_name):
     def root_route():
         """ Default route (/). Returns all public model scores """
         flu_models = FluModel.get_all_public()
-        if flu_models is None:
-            return '', status.HTTP_503_SERVICE_UNAVAILABLE
-        elif not flu_models:
+        if not flu_models:
             return '', status.HTTP_204_NO_CONTENT
         results = []
         for flu_model in flu_models:
@@ -57,9 +55,7 @@ def create_app(config_name):
     def models_route():
         """ Returns a catalogue of public models """
         flu_models = FluModel.get_all_public()
-        if flu_models is None:
-            return '', status.HTTP_503_SERVICE_UNAVAILABLE
-        elif not flu_models:
+        if not flu_models:
             return '', status.HTTP_204_NO_CONTENT
         results = []
         for flu_model in flu_models:
@@ -88,8 +84,6 @@ def create_app(config_name):
                 datetime.strptime(end_date, '%Y-%m-%d')
             )
         if scores is None:
-            return '', status.HTTP_503_SERVICE_UNAVAILABLE
-        elif not flu_model:
             return '', status.HTTP_204_NO_CONTENT
         datapoints = []
         for score in scores:

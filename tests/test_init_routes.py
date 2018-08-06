@@ -74,6 +74,12 @@ class InitRoutesTestCase(TestCase):
         self.assertEqual(result,  expected)
         self.assertEqual(response.status_code, 200)
 
+    def test_get_models_no_content(self):
+        response = self.client().get('/models')
+        result = response.data
+        self.assertEqual(result, b'')
+        self.assertEqual(response.status_code, 204)
+
     def test_get_scores_for_model(self):
         flumodel = FluModel()
         flumodel.name = 'Test Model'
@@ -114,6 +120,12 @@ class InitRoutesTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client().get('/scores/1', data={'startDate': '2018-07-30', 'endDate': '2018-06-30'})
         self.assertEqual(response.status_code, 400)
+
+    def test_get_scores_no_content(self):
+        response = self.client().get('/scores/1')
+        result = response.data
+        self.assertEqual(result, b'')
+        self.assertEqual(response.status_code, 204)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
