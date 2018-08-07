@@ -4,6 +4,7 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
+from os import getenv
 from tempfile import NamedTemporaryFile
 from typing import List, Tuple
 
@@ -13,6 +14,13 @@ class MatlabType(Enum):
     Enum used to specify the type of NATLAB client to build
     """
     LOCAL, REMOTE = range(2)
+
+    @classmethod
+    def getMatlabType(cls):
+        matlab_host = getenv("MATLAB_HOST", "")
+        if matlab_host == "" or matlab_host == "localhost":
+            return cls.LOCAL
+        return cls.REMOTE
 
 
 class MatlabClient(ABC):
@@ -133,10 +141,11 @@ class RemoteMatlabClient(MatlabClient):
         raise NotImplementedError
 
 
-def build_matlab_client(matlab_type: MatlabType):
+def build_matlab_client():
     """
     Creates a new instance of the MATLAB client used to calculate model scores
     """
+    matlab_type = MatlabType.getMatlabType()
     if matlab_type is MatlabType.LOCAL:
         return LocalMatlabClient()
     if matlab_type is MatlabType.REMOTE:

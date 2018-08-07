@@ -4,8 +4,11 @@
 
 from datetime import date
 from logging import INFO, log
+from os import environ
 
 from .google_api_client import GoogleApiClient
+from .matlab_client import build_matlab_client
+from .message_client import build_message_client
 from .score_query_registry import get_date_ranges_google_score,\
     get_google_batch,\
     set_and_verify_google_dates,\
@@ -30,10 +33,13 @@ def run(model_id: int, start: date, end: date):
     if missing_model_dates:
         msg_score = None
         msg_date = None
+        matlab_client = build_matlab_client()
         for missing_model_date in missing_model_dates:
-            msg_score = set_and_get_model_score(model_id, missing_model_date)
+            msg_score = set_and_get_model_score(model_id, matlab_client, missing_model_date)
             msg_date = missing_model_date
-        if msg_score is not None and msg_date is not None:
-            print(msg_score)
+        if environ['TWITTER_ENABLED']:
+            mq_client = build_message_client()
+            mq_client.publish_model_score(msg_date, msg_score)
+            log(INFO, 'Latest ModelScore value sent to message queue')
     else:
         log(INFO, 'Model scores have already been collected for this time period')

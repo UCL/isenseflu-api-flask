@@ -20,7 +20,7 @@ _ISO_FORMAT = '%Y-%m-%d'
 _TIMELINE_RESOLUTION = 'day'
 
 
-class GoogleApiClient(object):
+class GoogleApiClient:
     """
     Google Trends API client. It queries data restricted to England with a
     timeline resolution of 1 day.
