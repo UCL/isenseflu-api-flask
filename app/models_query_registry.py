@@ -9,7 +9,8 @@ from typing import Dict, List, Tuple, Union
 from sqlalchemy.sql import func
 
 from app import DB
-from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm
+from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm, \
+    ModelFunction
 
 
 def get_flu_model_for_id(model_id: int) -> FluModel:
@@ -125,11 +126,9 @@ def set_model_score_confidence_interval(
     model_score.save()
 
 
-def get_model_function_attr(model_id: int) -> Dict[str, Union[str, int]]:
+def get_model_function(model_id: int) -> ModelFunction:
     """ Return the model parameters """
-    return FluModel.query.filter_by(id=model_id)\
-        .first()\
-        .get_model_parameters()
+    return ModelFunction.query.filter_by(flu_model_id=model_id).first()
 
 
 def get_google_terms_and_scores(model_id: int, score_date: date) -> List[Tuple[str, float]]:

@@ -8,7 +8,7 @@ from typing import Dict, Iterator, List, Tuple, Union
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
     set_google_scores_for_term, set_google_date_for_model_id, get_existing_model_dates, \
     get_google_terms_and_scores, get_google_terms_and_averages, set_model_score, \
-    set_model_score_confidence_interval
+    set_model_score_confidence_interval, get_model_function
 from .google_batch import GoogleBatch
 from .matlab_client import MatlabClient
 
@@ -135,3 +135,16 @@ def set_and_get_model_score(
     )
     set_model_score_confidence_interval(model_id, score_date, score, (lower, upper))
     return score
+
+
+def get_matlab_function_attr(model_id: int) -> Dict[str, Union[str, float, bool]]:
+    """
+    Returns a dictionary with the definition parameters of the function used in Matlab
+    to calculate the model score
+    """
+    model_function = get_model_function(model_id)
+    return {
+        'matlab_function': model_function.function_name,
+        'average_window_size': model_function.average_window_size,
+        'has_confidence_interval': model_function.has_confidence_interval
+    }

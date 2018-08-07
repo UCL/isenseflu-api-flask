@@ -14,7 +14,9 @@ from .score_query_registry import get_date_ranges_google_score,\
     set_and_verify_google_dates,\
     set_google_scores,\
     get_dates_missing_model_score,\
-    set_and_get_model_score
+    set_and_get_model_score,\
+    get_model_function,\
+    get_moving_averages_or_scores
 
 
 def run(model_id: int, start: date, end: date):
@@ -31,11 +33,20 @@ def run(model_id: int, start: date, end: date):
         log(INFO, 'Google scores have already been collected for this time period')
     missing_model_dates = get_dates_missing_model_score(model_id, start, end)
     if missing_model_dates:
+        model_function = get_model_function(model_id)
         msg_score = None
         msg_date = None
         matlab_client = build_matlab_client()
         for missing_model_date in missing_model_dates:
-            msg_score = set_and_get_model_score(model_id, matlab_client, missing_model_date)
+            scores_or_averages = get_moving_averages_or_scores(model_id, model_function['average_window_size'],
+                                                               missing_model_date)
+            msg_score = set_and_get_model_score(
+                model_id,
+                matlab_client,
+                (model_function['matlab_function'], model_function['has_confidence_interval']),
+                scores_or_averages,
+                missing_model_date
+            )
             msg_date = missing_model_date
         if environ['TWITTER_ENABLED']:
             mq_client = build_message_client()

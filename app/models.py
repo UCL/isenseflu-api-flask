@@ -21,6 +21,7 @@ class FluModel(DB.Model):
     is_displayed = DB.Column(DB.Boolean, nullable=False)
     calculation_parameters = DB.Column(DB.Text, nullable=True)
     model_scores = DB.relationship('ModelScore')
+    model_function = DB.relationship('ModelFunction')
 
     def save(self):
         """ Convenience method to save current instance """
@@ -44,6 +45,24 @@ class FluModel(DB.Model):
 
     def __repr__(self):
         return '<Model %s>' % self.name
+
+
+class ModelFunction(DB.Model):
+    """
+    ORM Model to define the function used to calculate the model scores
+    """
+
+    id = DB.Column(DB.Integer, primary_key=True)
+    function_name = DB.Column(DB.String, nullable=False)
+    average_window_size = DB.Column(DB.Integer, nullable=False)
+    has_confidence_interval = DB.Column(DB.Boolean)
+
+    flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
+
+    def save(self):
+        """ Convenience method to save current instance """
+        DB.session.add(self)
+        DB.session.commit()
 
 
 class ModelScore(DB.Model):

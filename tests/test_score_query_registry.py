@@ -248,5 +248,8 @@ class ScoreQueryRegistryTestCase(TestCase):
             self.assertEqual(matlab_client.calculate_model_score_and_confidence.call_count, 1)
             self.assertEqual(result, 2.0)
 
+    def test_get_matlab_function_attr(self):
+        pass
+
     def tearDown(self):
         DB.drop_all(app=self.app)

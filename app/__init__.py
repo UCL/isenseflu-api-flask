@@ -17,7 +17,7 @@ def create_app(config_name):
     """ Creates an instance of Flask based on the config name as found in instance/config.py """
 
     from app.models_query_registry import get_flu_model_for_id, get_public_flu_models, \
-        get_model_scores_for_dates
+        get_model_scores_for_dates, get_model_function
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -39,14 +39,14 @@ def create_app(config_name):
                     'score_value': score.score_value
                 }
                 datapoints.append(child)
-            model_parameters = flu_model.get_model_parameters()
+            model_parameters = get_model_function(flu_model.id)
             obj = {
                 'name': flu_model.name,
                 'sourceType': flu_model.source_type,
                 'displayModel': flu_model.is_displayed,
                 'parameters': {
                     'georegion': 'e',
-                    'smoothing': model_parameters['average_window_size']
+                    'smoothing': model_parameters.average_window_size
                 },
                 'datapoints': datapoints
             }
@@ -101,14 +101,14 @@ def create_app(config_name):
                 }
                 child.update(confidence_interval)
             datapoints.append(child)
-        model_parameters = flu_model.get_model_parameters()
+        model_parameters = get_model_function(flu_model.id)
         result = {
             'name': flu_model.name,
             'sourceType': flu_model.source_type,
             'displayModel': flu_model.is_displayed,
             'parameters': {
                 'georegion': 'e',
-                'smoothing': model_parameters['average_window_size']
+                'smoothing': model_parameters.average_window_size
             },
             'datapoints': datapoints
         }

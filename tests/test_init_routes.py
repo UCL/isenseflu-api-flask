@@ -2,7 +2,7 @@ from unittest import TestCase
 from datetime import date, datetime
 
 from app import create_app, DB
-from app.models import FluModel, ModelScore
+from app.models import FluModel, ModelScore, ModelFunction
 
 
 class InitRoutesTestCase(TestCase):
@@ -32,8 +32,15 @@ class InitRoutesTestCase(TestCase):
         datapoint.calculation_timestamp = datetime.now()
         datapoint.score_value = '1.23'
         flumodel.model_scores = [datapoint]
+        model_function = ModelFunction()
+        model_function.id = 1
+        model_function.function_name = 'matlab_model'
+        model_function.average_window_size = 1
+        model_function.flu_model_id = 1
+        model_function.has_confidence_interval = True
         with self.app.app_context():
             flumodel.save()
+            model_function.save()
         response = self.client().get('/')
         result = response.get_json()
         expected = [
@@ -97,8 +104,15 @@ class InitRoutesTestCase(TestCase):
             entry.score_value = '1.23'
             datapoints.append(entry)
         flumodel.model_scores = datapoints
+        model_function = ModelFunction()
+        model_function.id = 1
+        model_function.function_name = 'matlab_model'
+        model_function.average_window_size = 1
+        model_function.flu_model_id = 1
+        model_function.has_confidence_interval = True
         with self.app.app_context():
             flumodel.save()
+            model_function.save()
         response = self.client().get('/scores/1', data={'startDate': '2018-05-30', 'endDate': '2018-06-30'})
         result = response.get_json()
         expected = {
