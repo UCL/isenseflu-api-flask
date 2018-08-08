@@ -4,7 +4,7 @@
 
 from datetime import date
 from logging import INFO, log
-from os import environ
+from os import getenv
 
 from .google_api_client import GoogleApiClient
 from .matlab_client import build_matlab_client
@@ -14,8 +14,8 @@ from .score_query_registry import get_date_ranges_google_score,\
     set_and_verify_google_dates,\
     set_google_scores,\
     get_dates_missing_model_score,\
-    set_and_get_model_score,\
-    get_model_function,\
+    set_and_get_model_score, \
+    get_matlab_function_attr,\
     get_moving_averages_or_scores
 
 
@@ -33,7 +33,7 @@ def run(model_id: int, start: date, end: date):
         log(INFO, 'Google scores have already been collected for this time period')
     missing_model_dates = get_dates_missing_model_score(model_id, start, end)
     if missing_model_dates:
-        model_function = get_model_function(model_id)
+        model_function = get_matlab_function_attr(model_id)
         msg_score = None
         msg_date = None
         matlab_client = build_matlab_client()
@@ -48,7 +48,7 @@ def run(model_id: int, start: date, end: date):
                 missing_model_date
             )
             msg_date = missing_model_date
-        if environ['TWITTER_ENABLED']:
+        if getenv('TWITTER_ENABLED'):
             mq_client = build_message_client()
             mq_client.publish_model_score(msg_date, msg_score)
             log(INFO, 'Latest ModelScore value sent to message queue')

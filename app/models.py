@@ -57,7 +57,7 @@ class ModelFunction(DB.Model):
     average_window_size = DB.Column(DB.Integer, nullable=False)
     has_confidence_interval = DB.Column(DB.Boolean)
 
-    flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
+    flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'))
 
     def save(self):
         """ Convenience method to save current instance """
@@ -86,7 +86,7 @@ class ModelScore(DB.Model):
 
     def __repr__(self):
         return '<ModelScore %s %s %f>' % (
-            self.day.strftime('%Y-%m-%d'), self.region, self.value)
+            self.score_date.strftime('%Y-%m-%d'), self.region, self.score_value)
 
 
 class GoogleScore(DB.Model):
