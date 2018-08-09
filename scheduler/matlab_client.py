@@ -106,8 +106,8 @@ class LocalMatlabClient(MatlabClient):
 
     @staticmethod
     def _write_tempfile(averages):
-        fhin = NamedTemporaryFile(prefix='fludetector-matlab-input.')
-        fhout = NamedTemporaryFile(prefix='fludetector-matlab-output.')
+        fhin = NamedTemporaryFile(mode='w+t', prefix='fludetector-matlab-input.')
+        fhout = NamedTemporaryFile(mode='w+t', prefix='fludetector-matlab-output.')
         fhin.write('\n'.join('%s,%f' % a for a in averages))
         fhin.flush()
         return fhin, fhout
