@@ -4,6 +4,7 @@ Commandline options for database management and testing
 
 import os
 import unittest
+from datetime import datetime
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 
@@ -35,6 +36,15 @@ def run_model_sched():
     """ Runs a scheduler to calculate model scores. """
     scheduler = Scheduler(APP)
     scheduler.run_model(1, "* * * * *")
+
+
+@MANAGER.command
+def init_model(model_id, start_date, end_date):
+    """ Calculates the first batch of scores """
+    start = datetime.strptime(start_date, '%Y-%m-%d')
+    end = datetime.strptime(end_date, '%Y-%m-%d')
+    scheduler = Scheduler(APP)
+    scheduler.init_model(model_id, start, end)
 
 
 if __name__ == '__main__':

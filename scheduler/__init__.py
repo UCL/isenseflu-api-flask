@@ -42,6 +42,13 @@ class Scheduler(object):
             if not self.scheduler.running:
                 self.scheduler.start()
 
+    def init_model(self, model_id: int, start_date: date, end_date: date):
+        """ Calculates the initial batch of scores """
+        with self.flask_app.app_context():
+            if not has_model(model_id):
+                raise ValueError('Could not find model with that ID')
+            run(model_id, start_date, end_date)
+
     def __del__(self):
         if self.scheduler.running:
             self.scheduler.shutdown(wait=False)
