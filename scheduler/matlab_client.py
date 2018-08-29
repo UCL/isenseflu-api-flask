@@ -102,7 +102,7 @@ class LocalMatlabClient(MatlabClient):
         value = str(open(fhout.name).read().strip()).split(",")
         fhin.close()
         fhout.close()
-        return float(value[0]), float(value[1]), float(value[3])
+        return float(value[0]), float(value[1]), float(value[2])
 
     @staticmethod
     def _write_tempfile(averages):
