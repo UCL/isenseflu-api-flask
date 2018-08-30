@@ -41,8 +41,8 @@ def run_model_sched():
 @MANAGER.command
 def init_model(model_id, start_date, end_date):
     """ Calculates the first batch of scores """
-    start = datetime.strptime(start_date, '%Y-%m-%d')
-    end = datetime.strptime(end_date, '%Y-%m-%d')
+    start = datetime.strptime(start_date, '%Y-%m-%d').date()
+    end = datetime.strptime(end_date, '%Y-%m-%d').date()
     scheduler = Scheduler(APP)
     scheduler.init_model(model_id, start, end)
 
