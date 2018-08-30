@@ -72,9 +72,9 @@ def create_app(config_name):
     def scores_route(id):
         """ Returns a list of model scores for a model id, start and end date """
         def_end_date = date.today() - timedelta(days=2)
-        end_date = str(request.data.get('endDate', def_end_date.strftime('%Y-%m-%d')))
+        end_date = str(request.args.get('endDate', def_end_date.strftime('%Y-%m-%d')))
         def_start_date = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)
-        start_date = str(request.data.get('startDate', def_start_date.strftime('%Y-%m-%d')))
+        start_date = str(request.args.get('startDate', def_start_date.strftime('%Y-%m-%d')))
         if start_date > end_date:
             return '', status.HTTP_400_BAD_REQUEST
         flu_model = get_flu_model_for_id(id)

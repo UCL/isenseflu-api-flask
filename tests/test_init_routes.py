@@ -113,7 +113,7 @@ class InitRoutesTestCase(TestCase):
         with self.app.app_context():
             flumodel.save()
             model_function.save()
-        response = self.client().get('/scores/1', data={'startDate': '2018-05-30', 'endDate': '2018-06-30'})
+        response = self.client().get('/scores/1?startDate=2018-05-30&endDate=2018-06-30')
         result = response.get_json()
         expected = {
             'name': 'Test Model',
@@ -132,7 +132,7 @@ class InitRoutesTestCase(TestCase):
         }
         self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
-        response = self.client().get('/scores/1', data={'startDate': '2018-07-30', 'endDate': '2018-06-30'})
+        response = self.client().get('/scores/1?startDate=2018-07-30&endDate=2018-06-30')
         self.assertEqual(response.status_code, 400)
 
     def test_get_scores_no_content(self):
