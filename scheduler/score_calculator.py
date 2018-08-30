@@ -3,7 +3,7 @@
 """
 
 from datetime import date
-from logging import INFO, log
+from logging import INFO, log, basicConfig
 from os import getenv
 
 from .google_api_client import GoogleApiClient
@@ -17,6 +17,8 @@ from .score_query_registry import get_date_ranges_google_score,\
     set_and_get_model_score, \
     get_matlab_function_attr,\
     get_moving_averages_or_scores
+
+basicConfig(format='%(asctime)s %(levelname)s : %(message)s', level=INFO)
 
 
 def run(model_id: int, start: date, end: date):
