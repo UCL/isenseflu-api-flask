@@ -4,13 +4,21 @@
 """
 
 from datetime import date, timedelta
-from typing import Dict, List, Tuple, Union
+from typing import List, Tuple
 
 from sqlalchemy.sql import func
 
 from app import DB
 from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm, \
-    ModelFunction
+    ModelFunction, DefaultFluModel
+
+
+def get_default_flu_model() -> FluModel:
+    """ Returns the default Flu Model """
+    return FluModel.query.filter_by(is_public=True, is_displayed=True)\
+        .join(DefaultFluModel)\
+        .filter(DefaultFluModel.flu_model_id == FluModel.id)\
+        .first()
 
 
 def get_flu_model_for_id(model_id: int) -> FluModel:

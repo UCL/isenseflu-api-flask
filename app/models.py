@@ -47,6 +47,18 @@ class FluModel(DB.Model):
         return '<Model %s>' % self.name
 
 
+class DefaultFluModel(DB.Model):
+    """
+    ORM Model to define the default public model to be returned by the API
+    """
+
+    id = DB.Column(DB.Integer, primary_key=True)
+    flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'))
+
+    def __repr__(self):
+        return '<DefaultFluModel %d>' % self.flu_model_id
+
+
 class ModelFunction(DB.Model):
     """
     ORM Model to define the function used to calculate the model scores

@@ -7,11 +7,11 @@ from unittest import TestCase
 
 from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore, FluModel, \
-    ModelFunction
+    ModelFunction, DefaultFluModel
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
     set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score, \
     get_model_function, get_google_terms_and_scores, get_google_terms_and_averages, \
-    get_flu_model_for_id, get_public_flu_models
+    get_flu_model_for_id, get_public_flu_models, get_default_flu_model
 
 
 class ModelsTestCase(TestCase):
@@ -270,6 +270,26 @@ class ModelsTestCase(TestCase):
             result = get_google_terms_and_averages(1, 2, date(2018, 1, 2))
             expected = [('Term 0', 0.3), ('Term 1', 1.3), ('Term 2', 2.3)]
             self.assertListEqual(result, expected)
+
+    def test_get_default_flu_model(self):
+        """
+        Scenario: Get the default flu model
+        """
+        with self.app.app_context():
+            flu_model = FluModel()
+            flu_model.id = 1
+            flu_model.is_displayed = True
+            flu_model.is_public = True
+            flu_model.calculation_parameters = ''
+            flu_model.name = 'Model 1'
+            flu_model.source_type = 'google'
+            flu_model.save()
+            default_model = DefaultFluModel()
+            default_model.flu_model_id = 1
+            DB.session.add(default_model)
+            DB.session.commit()
+            result = get_default_flu_model()
+            self.assertEqual(result.name, 'Model 1')
 
     def tearDown(self):
         DB.drop_all(app=self.app)
