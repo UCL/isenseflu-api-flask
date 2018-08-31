@@ -2,7 +2,7 @@ from unittest import TestCase
 from datetime import date, datetime
 
 from app import create_app, DB
-from app.models import FluModel, ModelScore, ModelFunction
+from app.models import FluModel, ModelScore, ModelFunction, DefaultFluModel
 
 
 class InitRoutesTestCase(TestCase):
@@ -30,7 +30,9 @@ class InitRoutesTestCase(TestCase):
         datapoint.region = 'e'
         datapoint.score_date = date(2018, 6, 29)
         datapoint.calculation_timestamp = datetime.now()
-        datapoint.score_value = '1.23'
+        datapoint.score_value = 1.23
+        datapoint.confidence_interval_lower = 0.81
+        datapoint.confidence_interval_upper = 1.65
         flumodel.model_scores = [datapoint]
         model_function = ModelFunction()
         model_function.id = 1
@@ -38,28 +40,28 @@ class InitRoutesTestCase(TestCase):
         model_function.average_window_size = 1
         model_function.flu_model_id = 1
         model_function.has_confidence_interval = True
+        default_model = DefaultFluModel()
+        default_model.flu_model_id = 1
         with self.app.app_context():
             flumodel.save()
             model_function.save()
+            DB.session.add(default_model)
+            DB.session.commit()
         response = self.client().get('/')
         result = response.get_json()
-        expected = [
-            {
-                'name': 'Test Model',
-                'sourceType': 'google',
-                'displayModel': True,
-                'parameters': {
-                    'georegion': 'e',
-                    'smoothing': 1
-                },
-                'datapoints': [
-                    {
-                        'score_date': 'Fri, 29 Jun 2018 00:00:00 GMT',
-                        'score_value': 1.23
-                    }
-                ]
-            }
-        ]
+        expected = {
+            'id': 1,
+            'name': 'Test Model',
+            'hasConfidenceInterval': True,
+            'datapoints': [
+                {
+                    'score_date': 'Fri, 29 Jun 2018 00:00:00 GMT',
+                    'score_value': 1.23,
+                    'confidence_interval_lower': 0.81,
+                    'confidence_interval_upper': 1.65
+                }
+            ]
+        }
         self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
 

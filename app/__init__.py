@@ -17,7 +17,7 @@ def create_app(config_name):
     """ Creates an instance of Flask based on the config name as found in instance/config.py """
 
     from app.models_query_registry import get_flu_model_for_id, get_public_flu_models, \
-        get_model_scores_for_dates, get_model_function
+        get_model_scores_for_dates, get_model_function, get_default_flu_model
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -26,32 +26,31 @@ def create_app(config_name):
 
     @app.route('/', methods=['GET'])
     def root_route():
-        """ Default route (/). Returns all public model scores """
-        flu_models = get_public_flu_models()
-        if not flu_models:
+        """ Default route (/). Returns model scores for the default flu model """
+        default_model = get_default_flu_model()
+        if not default_model:
             return '', status.HTTP_204_NO_CONTENT
-        results = []
-        for flu_model in flu_models:
-            datapoints = []
-            for score in flu_model.model_scores:
-                child = {
-                    'score_date': score.score_date,
-                    'score_value': score.score_value
-                }
-                datapoints.append(child)
-            model_parameters = get_model_function(flu_model.id)
-            obj = {
-                'name': flu_model.name,
-                'sourceType': flu_model.source_type,
-                'displayModel': flu_model.is_displayed,
-                'parameters': {
-                    'georegion': 'e',
-                    'smoothing': model_parameters.average_window_size
-                },
-                'datapoints': datapoints
+        model_parameters = get_model_function(default_model.id)
+        datapoints = []
+        for score in default_model.model_scores:
+            child = {
+                'score_date': score.score_date,
+                'score_value': score.score_value
             }
-            results.append(obj)
-        return results, status.HTTP_200_OK
+            if model_parameters.has_confidence_interval:
+                confidence_interval = {
+                    'confidence_interval_upper': score.confidence_interval_upper,
+                    'confidence_interval_lower': score.confidence_interval_lower
+                }
+                child.update(confidence_interval)
+            datapoints.append(child)
+        result = {
+            'id': default_model.id,
+            'name': default_model.name,
+            'hasConfidenceInterval': model_parameters.has_confidence_interval,
+            'datapoints': datapoints
+        }
+        return result, status.HTTP_200_OK
 
     @app.route('/models', methods=['GET'])
     def models_route():
