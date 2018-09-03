@@ -55,7 +55,7 @@ class InitRoutesTestCase(TestCase):
             'hasConfidenceInterval': True,
             'datapoints': [
                 {
-                    'score_date': 'Fri, 29 Jun 2018 00:00:00 GMT',
+                    'score_date': '2018-06-29',
                     'score_value': 1.23,
                     'confidence_interval_lower': 0.81,
                     'confidence_interval_upper': 1.65
@@ -127,7 +127,7 @@ class InitRoutesTestCase(TestCase):
             },
             'datapoints': [
                 {
-                    'score_date': 'Wed, 20 Jun 2018 00:00:00 GMT',
+                    'score_date': '2018-06-20',
                     'score_value': 1.23
                 }
             ]

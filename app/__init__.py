@@ -34,7 +34,7 @@ def create_app(config_name):
         datapoints = []
         for score in default_model.model_scores:
             child = {
-                'score_date': score.score_date,
+                'score_date': score.score_date.strftime('%Y-%m-%d'),
                 'score_value': score.score_value
             }
             if model_parameters.has_confidence_interval:
@@ -89,7 +89,7 @@ def create_app(config_name):
         datapoints = []
         for score in scores:
             child = {
-                'score_date': score.score_date,
+                'score_date': score.score_date.strftime('%Y-%m-%d'),
                 'score_value': score.score_value
             }
             if isinstance(score.confidence_interval_upper, Number) and \
