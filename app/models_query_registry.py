@@ -4,13 +4,34 @@
 """
 
 from datetime import date, timedelta
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from sqlalchemy.sql import func
 
 from app import DB
 from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm, \
     ModelFunction, DefaultFluModel
+
+
+def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
+    """ Returns the last 30 days of data for the default Flu Model """
+    default_flu_model = FluModel.query.filter_by(is_public=True, is_displayed=True)\
+        .join(DefaultFluModel)\
+        .filter(DefaultFluModel.flu_model_id == FluModel.id)\
+        .first()
+    model_scores = ModelScore.query.filter_by(flu_model_id=default_flu_model.id)\
+        .order_by(ModelScore.score_date.desc())\
+        .limit(30)\
+        .all()
+    scores = [s.score_value for s in model_scores]
+    flu_model_meta = {
+        'id': default_flu_model.id,
+        'name': default_flu_model.name,
+        'average_score': sum(scores) / float(len(scores)),
+        'start_date': model_scores[-1].score_date,
+        'end_date': model_scores[0].score_date
+    }
+    return flu_model_meta, model_scores
 
 
 def get_default_flu_model() -> FluModel:

@@ -26,7 +26,7 @@ def create_app(config_name):
 
     @app.route('/', methods=['GET'])
     def root_route():
-        """ Default route (/). Returns model scores for the default flu model """
+        """ Default route (/). Returns the last 30 days of model scores for the default flu model """
         default_model = get_default_flu_model()
         if not default_model:
             return '', status.HTTP_204_NO_CONTENT
