@@ -19,10 +19,14 @@ def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
         .join(DefaultFluModel)\
         .filter(DefaultFluModel.flu_model_id == FluModel.id)\
         .first()
-    model_scores = ModelScore.query.filter_by(flu_model_id=default_flu_model.id)\
+    if not default_flu_model:
+        return None, None
+    model_scores = ModelScore.query.filter(ModelScore.flu_model_id == default_flu_model.id)\
         .order_by(ModelScore.score_date.desc())\
         .limit(30)\
         .all()
+    if not model_scores:
+        return None, None
     scores = [s.score_value for s in model_scores]
     flu_model_meta = {
         'id': default_flu_model.id,

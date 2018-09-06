@@ -17,7 +17,7 @@ def create_app(config_name):
     """ Creates an instance of Flask based on the config name as found in instance/config.py """
 
     from app.models_query_registry import get_flu_model_for_id, get_public_flu_models, \
-        get_model_scores_for_dates, get_model_function, get_default_flu_model
+        get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -27,12 +27,12 @@ def create_app(config_name):
     @app.route('/', methods=['GET'])
     def root_route():
         """ Default route (/). Returns the last 30 days of model scores for the default flu model """
-        default_model = get_default_flu_model()
-        if not default_model:
+        model_data, model_scores = get_default_flu_model_30days()
+        if not model_data:
             return '', status.HTTP_204_NO_CONTENT
-        model_parameters = get_model_function(default_model.id)
+        model_parameters = get_model_function(model_data['id'])
         datapoints = []
-        for score in default_model.model_scores:
+        for score in model_scores:
             child = {
                 'score_date': score.score_date.strftime('%Y-%m-%d'),
                 'score_value': score.score_value
@@ -45,8 +45,8 @@ def create_app(config_name):
                 child.update(confidence_interval)
             datapoints.append(child)
         result = {
-            'id': default_model.id,
-            'name': default_model.name,
+            'id': model_data['id'],
+            'name': model_data['name'],
             'hasConfidenceInterval': model_parameters.has_confidence_interval,
             'datapoints': datapoints
         }
