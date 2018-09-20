@@ -25,8 +25,6 @@ def create_app(config_name):
     app.config.from_pyfile('config.ini', silent=True)
     DB.init_app(app)
     CORS(app)
-    import logging
-    logging.getLogger('flask_cors').level = logging.DEBUG
 
     @app.route('/', methods=['GET'])
     def root_route():
@@ -81,7 +79,10 @@ def create_app(config_name):
         end_date = str(request.args.get('endDate', def_end_date.strftime('%Y-%m-%d')))
         def_start_date = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)
         start_date = str(request.args.get('startDate', def_start_date.strftime('%Y-%m-%d')))
+        resolution = str(request.args.get('resolution', 'day'))
         if start_date > end_date:
+            return '', status.HTTP_400_BAD_REQUEST
+        if resolution not in ['day', 'week']:
             return '', status.HTTP_400_BAD_REQUEST
         flu_model = get_flu_model_for_id(id)
         scores = None
@@ -94,6 +95,8 @@ def create_app(config_name):
         if scores is None:
             return '', status.HTTP_204_NO_CONTENT
         datapoints = []
+        if resolution == 'week':
+            scores = [s for s in scores if s.score_date.weekday() == 6]
         for score in scores:
             child = {
                 'score_date': score.score_date.strftime('%Y-%m-%d'),
