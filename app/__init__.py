@@ -6,6 +6,7 @@ from datetime import date, timedelta, datetime
 from numbers import Number
 from flask import request
 from flask_api import FlaskAPI, status
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 from instance.config import app_config
@@ -23,6 +24,9 @@ def create_app(config_name):
     app.config.from_object(app_config[config_name])
     app.config.from_pyfile('config.ini', silent=True)
     DB.init_app(app)
+    CORS(app)
+    import logging
+    logging.getLogger('flask_cors').level = logging.DEBUG
 
     @app.route('/', methods=['GET'])
     def root_route():
@@ -105,6 +109,7 @@ def create_app(config_name):
             datapoints.append(child)
         model_parameters = get_model_function(flu_model.id)
         result = {
+            'id': flu_model.id,
             'name': flu_model.name,
             'sourceType': flu_model.source_type,
             'displayModel': flu_model.is_displayed,
