@@ -165,7 +165,7 @@ def create_app(config_name):
             datapoints.append(child)
         fields = ['score_date', 'score_value']
         if hasConfidenceInterval:
-            fields.append(['confidence_interval_upper', 'confidence_interval_lower'])
+            fields.extend(['confidence_interval_upper', 'confidence_interval_lower'])
         return send_csv(datapoints, filename='%s.csv' % flu_model.name, fields=fields), status.HTTP_200_OK
 
     return app
