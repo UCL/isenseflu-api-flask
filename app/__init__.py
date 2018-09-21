@@ -7,6 +7,7 @@ from numbers import Number
 from flask import request
 from flask_api import FlaskAPI, status
 from flask_cors import CORS
+from flask_csv import send_csv
 from flask_sqlalchemy import SQLAlchemy
 
 from instance.config import app_config
@@ -126,5 +127,45 @@ def create_app(config_name):
             'datapoints': datapoints
         }
         return result, status.HTTP_200_OK
+
+    @app.route('/csv/<int:id>', methods=['GET'])
+    def csv_route(id):
+        """ Returns a list of model scores and dates for a model id, start and end date """
+        def_end_date = date.today() - timedelta(days=2)
+        end_date = str(request.args.get('endDate', def_end_date.strftime('%Y-%m-%d')))
+        def_start_date = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)
+        start_date = str(request.args.get('startDate', def_start_date.strftime('%Y-%m-%d')))
+        if start_date > end_date:
+            return '', status.HTTP_400_BAD_REQUEST
+        flu_model = get_flu_model_for_id(id)
+        scores = None
+        if flu_model is not None:
+            scores = get_model_scores_for_dates(
+                id,
+                datetime.strptime(start_date, '%Y-%m-%d').date(),
+                datetime.strptime(end_date, '%Y-%m-%d').date()
+            )
+        if scores is None:
+            return '', status.HTTP_204_NO_CONTENT
+        datapoints = []
+        hasConfidenceInterval = False
+        for score in scores:
+            child = {
+                'score_date': score.score_date.strftime('%Y-%m-%d'),
+                'score_value': score.score_value
+            }
+            if isinstance(score.confidence_interval_upper, Number) and \
+                    isinstance(score.confidence_interval_upper, Number):
+                confidence_interval = {
+                    'confidence_interval_upper': score.confidence_interval_upper,
+                    'confidence_interval_lower': score.confidence_interval_lower
+                }
+                child.update(confidence_interval)
+                hasConfidenceInterval = True
+            datapoints.append(child)
+        fields = ['score_date', 'score_value']
+        if hasConfidenceInterval:
+            fields.append(['confidence_interval_upper', 'confidence_interval_lower'])
+        return send_csv(datapoints, filename='%s.csv' % flu_model.name, fields=fields), status.HTTP_200_OK
 
     return app

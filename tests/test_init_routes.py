@@ -216,6 +216,29 @@ class InitRoutesTestCase(TestCase):
         }
         self.assertEqual(result, expected)
 
+    def test_csv(self):
+        flumodel = FluModel()
+        flumodel.id = 1
+        flumodel.name = 'Test Model'
+        flumodel.is_public = True
+        flumodel.is_displayed = True
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
+        dates = [date(2018, 6, d) for d in range(1, 30)]
+        datapoints = []
+        for d in dates:
+            entry = ModelScore()
+            entry.region = 'e'
+            entry.score_date = d
+            entry.calculation_timestamp = datetime.now()
+            entry.score_value = 1 + 10 / d.day
+            datapoints.append(entry)
+        flumodel.model_scores = datapoints
+        with self.app.app_context():
+            flumodel.save()
+            response = self.client().get('/csv/1?startDate=2018-06-10&endDate=2018-06-10')
+            self.assertEqual(response.headers['Content-Disposition'], 'attachment; filename="Test Model.csv"')
+
     def test_get_scores_no_content(self):
         response = self.client().get('/scores/1')
         result = response.data
