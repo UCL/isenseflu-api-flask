@@ -120,6 +120,7 @@ def create_app(config_name):
                 'georegion': 'e',
                 'smoothing': model_parameters.average_window_size
             },
+            'average_score': sum([s.score_value for s in scores]) / float(len(scores)),
             'datapoints': datapoints
         }
         return result, status.HTTP_200_OK

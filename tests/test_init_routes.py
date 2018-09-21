@@ -129,6 +129,7 @@ class InitRoutesTestCase(TestCase):
                 'georegion': 'e',
                 'smoothing': 1
             },
+            'average_score': 1.23,
             'datapoints': [
                 {
                     'score_date': '2018-06-20',
