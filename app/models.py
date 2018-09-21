@@ -99,7 +99,14 @@ class ModelScore(DB.Model):
             ModelScore.score_date >= self.score_date - window,
             ModelScore.score_date <= self.score_date + window,
             ModelScore.region == self.region).all()
-        return sum(s.score_value for s in scores) / len(scores)
+        avg_score = sum(s.score_value for s in scores) / len(scores)
+        avg_upper_conf = sum(
+            s.confidence_interval_upper for s in scores if s.confidence_interval_upper is not None
+        ) / len(scores)
+        avg_lower_conf = sum(
+            s.confidence_interval_lower for s in scores if s.confidence_interval_lower is not None
+        ) / len(scores)
+        return avg_score, avg_upper_conf, avg_lower_conf
 
     def save(self):
         """ Convenience method to save current instance """

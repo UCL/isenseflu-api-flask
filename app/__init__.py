@@ -100,7 +100,12 @@ def create_app(config_name):
         if resolution == 'week':
             scores = [s for s in scores if s.score_date.weekday() == 6]
         for score in scores:
-            score_value = score.score_value if smoothing == 0 else score.moving_avg(smoothing)
+            if smoothing == 0:
+                score_value = score.score_value
+                upper_conf = score.confidence_interval_upper
+                lower_conf = score.confidence_interval_lower
+            else:
+                score_value, upper_conf, lower_conf = score.moving_avg(smoothing)
             child = {
                 'score_date': score.score_date.strftime('%Y-%m-%d'),
                 'score_value': score_value
@@ -108,12 +113,13 @@ def create_app(config_name):
             if isinstance(score.confidence_interval_upper, Number) and \
                     isinstance(score.confidence_interval_upper, Number):
                 confidence_interval = {
-                    'confidence_interval_upper': score.confidence_interval_upper,
-                    'confidence_interval_lower': score.confidence_interval_lower
+                    'confidence_interval_upper': upper_conf,
+                    'confidence_interval_lower': lower_conf
                 }
                 child.update(confidence_interval)
             datapoints.append(child)
         model_parameters = get_model_function(flu_model.id)
+        score_dates = [s.score_date for s in scores]
         result = {
             'id': flu_model.id,
             'name': flu_model.name,
@@ -123,6 +129,8 @@ def create_app(config_name):
                 'georegion': 'e',
                 'smoothing': model_parameters.average_window_size
             },
+            'start_date': min(score_dates).strftime('%Y-%m-%d'),
+            'end_date': max(score_dates).strftime('%Y-%m-%d'),
             'average_score': sum([s.score_value for s in scores]) / float(len(scores)),
             'datapoints': datapoints
         }

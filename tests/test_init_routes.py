@@ -129,6 +129,8 @@ class InitRoutesTestCase(TestCase):
                 'georegion': 'e',
                 'smoothing': 1
             },
+            'start_date': '2018-06-20',
+            'end_date': '2018-06-20',
             'average_score': 1.23,
             'datapoints': [
                 {
@@ -207,6 +209,8 @@ class InitRoutesTestCase(TestCase):
             ],
             'name': 'Test Model',
             'sourceType': 'google',
+            'start_date': '2018-06-10',
+            'end_date': '2018-06-10',
             'average_score': 2.0,
             'parameters': {
                 'smoothing': 1,
