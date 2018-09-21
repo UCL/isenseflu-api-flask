@@ -172,6 +172,50 @@ class InitRoutesTestCase(TestCase):
         result = response.get_json()
         self.assertEqual(len(result['datapoints']), 4)
 
+    def test_get_scores_smoothing(self):
+        flumodel = FluModel()
+        flumodel.name = 'Test Model'
+        flumodel.is_public = True
+        flumodel.is_displayed = True
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
+        dates = [date(2018, 6, d) for d in range(1, 30)]
+        datapoints = []
+        for d in dates:
+            entry = ModelScore()
+            entry.region = 'e'
+            entry.score_date = d
+            entry.calculation_timestamp = datetime.now()
+            entry.score_value = 1 + 10 / d.day
+            datapoints.append(entry)
+        flumodel.model_scores = datapoints
+        model_function = ModelFunction()
+        model_function.id = 1
+        model_function.function_name = 'matlab_model'
+        model_function.average_window_size = 1
+        model_function.flu_model_id = 1
+        model_function.has_confidence_interval = True
+        with self.app.app_context():
+            flumodel.save()
+            model_function.save()
+        response = self.client().get('/scores/1?startDate=2018-06-10&endDate=2018-06-10&smoothing=3')
+        result = response.get_json()
+        expected = {
+            'displayModel': True,
+            'datapoints': [
+                {'score_value': 2.0067340067340065, 'score_date': '2018-06-10'}
+            ],
+            'name': 'Test Model',
+            'sourceType': 'google',
+            'average_score': 2.0,
+            'parameters': {
+                'smoothing': 1,
+                'georegion': 'e'
+            },
+            'id': 1
+        }
+        self.assertEqual(result, expected)
+
     def test_get_scores_no_content(self):
         response = self.client().get('/scores/1')
         result = response.data

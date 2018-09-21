@@ -2,7 +2,7 @@
 Data model used by the app (SQLAlchemy is used as ORM)
 """
 
-from datetime import date
+from datetime import date, timedelta
 
 from app import DB
 
@@ -90,6 +90,16 @@ class ModelScore(DB.Model):
     confidence_interval_upper = DB.Column(DB.Float, nullable=True)
 
     flu_model_id = DB.Column(DB.Integer, DB.ForeignKey('model.id'), primary_key=True)
+
+    def moving_avg(self, days):
+        """ Calculate moving average over a window of days """
+        window = timedelta(days=max(0, (days - 1) / 2))
+        scores = ModelScore.query.filter(
+            ModelScore.flu_model_id == self.flu_model_id,
+            ModelScore.score_date >= self.score_date - window,
+            ModelScore.score_date <= self.score_date + window,
+            ModelScore.region == self.region).all()
+        return sum(s.score_value for s in scores) / len(scores)
 
     def save(self):
         """ Convenience method to save current instance """

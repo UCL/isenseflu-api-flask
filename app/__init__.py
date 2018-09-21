@@ -80,6 +80,7 @@ def create_app(config_name):
         def_start_date = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)
         start_date = str(request.args.get('startDate', def_start_date.strftime('%Y-%m-%d')))
         resolution = str(request.args.get('resolution', 'day'))
+        smoothing = int(request.args.get('smoothing', 0))
         if start_date > end_date:
             return '', status.HTTP_400_BAD_REQUEST
         if resolution not in ['day', 'week']:
@@ -98,9 +99,10 @@ def create_app(config_name):
         if resolution == 'week':
             scores = [s for s in scores if s.score_date.weekday() == 6]
         for score in scores:
+            score_value = score.score_value if smoothing == 0 else score.moving_avg(smoothing)
             child = {
                 'score_date': score.score_date.strftime('%Y-%m-%d'),
-                'score_value': score.score_value
+                'score_value': score_value
             }
             if isinstance(score.confidence_interval_upper, Number) and \
                     isinstance(score.confidence_interval_upper, Number):
