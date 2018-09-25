@@ -62,7 +62,7 @@ def get_model_scores_for_dates(model_id: int, start_date: date, end_date: date) 
         ModelScore.flu_model_id == model_id,
         ModelScore.score_date >= start_date,
         ModelScore.score_date <= end_date
-    ).all()
+    ).order_by(ModelScore.score_date.desc()).all()
 
 
 def has_model(model_id) -> bool:
