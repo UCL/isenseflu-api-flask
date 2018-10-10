@@ -19,7 +19,8 @@ def create_app(config_name):
     """ Creates an instance of Flask based on the config name as found in instance/config.py """
 
     from app.models_query_registry import get_flu_model_for_id, get_public_flu_models, \
-        get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days
+        get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days, \
+        get_rate_thresholds
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -47,6 +48,7 @@ def create_app(config_name):
                 }
                 child.update(confidence_interval)
             datapoints.append(child)
+        rate_thresholds = get_rate_thresholds(model_data['start_date'])
         result = {
             'id': model_data['id'],
             'name': model_data['name'],
@@ -54,6 +56,7 @@ def create_app(config_name):
             'start_date': model_data['start_date'].strftime('%Y-%m-%d'),
             'end_date': model_data['end_date'].strftime('%Y-%m-%d'),
             'average_score': model_data['average_score'],
+            'rate_thresholds': rate_thresholds,
             'datapoints': datapoints
         }
         return result, status.HTTP_200_OK
@@ -120,6 +123,7 @@ def create_app(config_name):
             datapoints.append(child)
         model_parameters = get_model_function(flu_model.id)
         score_dates = [s.score_date for s in scores]
+        rate_thresholds = get_rate_thresholds(min(score_dates))
         result = {
             'id': flu_model.id,
             'name': flu_model.name,
@@ -132,6 +136,7 @@ def create_app(config_name):
             'start_date': min(score_dates).strftime('%Y-%m-%d'),
             'end_date': max(score_dates).strftime('%Y-%m-%d'),
             'average_score': sum([s.score_value for s in scores]) / float(len(scores)),
+            'rate_thresholds': rate_thresholds,
             'datapoints': datapoints
         }
         return result, status.HTTP_200_OK

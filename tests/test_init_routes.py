@@ -56,6 +56,7 @@ class InitRoutesTestCase(TestCase):
             'start_date': '2018-06-29',
             'end_date': '2018-06-29',
             'average_score': 1.23,
+            'rate_thresholds': {},
             'datapoints': [
                 {
                     'score_date': '2018-06-29',
@@ -132,6 +133,7 @@ class InitRoutesTestCase(TestCase):
             'start_date': '2018-06-20',
             'end_date': '2018-06-20',
             'average_score': 1.23,
+            'rate_thresholds': {},
             'datapoints': [
                 {
                     'score_date': '2018-06-20',
@@ -204,6 +206,7 @@ class InitRoutesTestCase(TestCase):
         result = response.get_json()
         expected = {
             'displayModel': True,
+            'rate_thresholds': {},
             'datapoints': [
                 {'score_value': 2.0067340067340065, 'score_date': '2018-06-10'}
             ],

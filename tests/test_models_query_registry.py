@@ -7,11 +7,12 @@ from unittest import TestCase
 
 from app import create_app, DB
 from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, ModelScore, FluModel, \
-    ModelFunction, DefaultFluModel
+    ModelFunction, DefaultFluModel, RateThresholdSet
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
     set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score, \
     get_model_function, get_google_terms_and_scores, get_google_terms_and_averages, \
-    get_flu_model_for_id, get_public_flu_models, get_default_flu_model, get_default_flu_model_30days
+    get_flu_model_for_id, get_public_flu_models, get_default_flu_model, get_default_flu_model_30days, \
+    get_rate_thresholds
 
 
 class ModelsTestCase(TestCase):
@@ -322,6 +323,24 @@ class ModelsTestCase(TestCase):
             self.assertEqual(result[0]['name'], 'Model 1')
             self.assertEqual(result[0]['id'], 1)
             self.assertEqual(len(result[1]), 30)
+
+    def test_get_rate_thresholds(self):
+        """
+        Scenario: Get the current set of rate thresholds
+        """
+        with self.app.app_context():
+            rate_threshold = RateThresholdSet()
+            rate_threshold.threshold_set_id = 1
+            rate_threshold.low_value = 0.1
+            rate_threshold.medium_value = 0.2
+            rate_threshold.high_value = 0.3
+            rate_threshold.very_high_value = 0.4
+            rate_threshold.valid_from = date(2018, 1, 1)
+            rate_threshold.valid_until = None
+            rate_threshold.save()
+            result = get_rate_thresholds(date(2018, 2, 1))
+            expected = {'very_high_value': 0.4, 'high_value': 0.3, 'medium_value': 0.2, 'low_value': 0.1}
+            self.assertDictEqual(result, expected)
 
     def tearDown(self):
         DB.drop_all(app=self.app)

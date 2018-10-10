@@ -198,3 +198,23 @@ class FluModelGoogleTerm(DB.Model):
         """ Convenience method to save current instance """
         DB.session.add(self)
         DB.session.commit()
+
+
+class RateThresholdSet(DB.Model):
+    """
+    ORM Model representing the list of current set of epidemic rate thresholds as published by PHE
+    """
+
+    threshold_set_id = DB.Column(DB.Integer, primary_key=True)
+    log_timestamp = DB.Column(DB.DateTime, default=DB.func.current_timestamp())
+    low_value = DB.Column(DB.Float)
+    medium_value = DB.Column(DB.Float)
+    high_value = DB.Column(DB.Float)
+    very_high_value = DB.Column(DB.Float)
+    valid_from = DB.Column(DB.Date)
+    valid_until = DB.Column(DB.Date)
+
+    def save(self):
+        """ Convenience method to save current instance """
+        DB.session.add(self)
+        DB.session.commit()

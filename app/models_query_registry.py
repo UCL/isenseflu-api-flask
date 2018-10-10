@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 
 from app import DB
 from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm, \
-    ModelFunction, DefaultFluModel
+    ModelFunction, DefaultFluModel, RateThresholdSet
 
 
 def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
@@ -189,3 +189,25 @@ def get_google_terms_and_averages(
         .filter(FluModelGoogleTerm.flu_model_id == model_id)\
         .group_by(GoogleTerm.term)\
         .all()
+
+
+def get_rate_thresholds(
+        start_date: date
+) -> Dict[str, float]:
+    """ Returns the current set of rate thresholds """
+    result_set = DB.session.query(
+        RateThresholdSet.low_value,
+        RateThresholdSet.medium_value,
+        RateThresholdSet.high_value,
+        RateThresholdSet.very_high_value)\
+        .filter(RateThresholdSet.valid_from <= start_date)\
+        .filter((RateThresholdSet.valid_until >= start_date) | (RateThresholdSet.valid_until.is_(None)))\
+        .first()
+    if result_set is not None:
+        return {
+            "low_value": result_set[0],
+            "medium_value": result_set[1],
+            "high_value": result_set[2],
+            "very_high_value": result_set[3]
+        }
+    return {}
