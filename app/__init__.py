@@ -53,6 +53,10 @@ def create_app(config_name):
             'id': model_data['id'],
             'name': model_data['name'],
             'hasConfidenceInterval': model_parameters.has_confidence_interval,
+            'parameters': {
+                'georegion': 'e',
+                'smoothing': model_parameters.average_window_size
+            },
             'start_date': model_data['start_date'].strftime('%Y-%m-%d'),
             'end_date': model_data['end_date'].strftime('%Y-%m-%d'),
             'average_score': model_data['average_score'],

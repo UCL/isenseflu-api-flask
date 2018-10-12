@@ -53,6 +53,10 @@ class InitRoutesTestCase(TestCase):
             'id': 1,
             'name': 'Test Model',
             'hasConfidenceInterval': True,
+            'parameters': {
+                'georegion': 'e',
+                'smoothing': 1
+            },
             'start_date': '2018-06-29',
             'end_date': '2018-06-29',
             'average_score': 1.23,
