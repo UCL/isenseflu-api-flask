@@ -136,6 +136,7 @@ class InitRoutesTestCase(TestCase):
             },
             'start_date': '2018-06-20',
             'end_date': '2018-06-20',
+            'hasConfidenceInterval': True,
             'average_score': 1.23,
             'rate_thresholds': {},
             'datapoints': [
@@ -218,6 +219,7 @@ class InitRoutesTestCase(TestCase):
             'sourceType': 'google',
             'start_date': '2018-06-10',
             'end_date': '2018-06-10',
+            'hasConfidenceInterval': True,
             'average_score': 2.0,
             'parameters': {
                 'smoothing': 1,

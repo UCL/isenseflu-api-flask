@@ -133,6 +133,7 @@ def create_app(config_name):
             'name': flu_model.name,
             'sourceType': flu_model.source_type,
             'displayModel': flu_model.is_displayed,
+            'hasConfidenceInterval': model_parameters.has_confidence_interval,
             'parameters': {
                 'georegion': 'e',
                 'smoothing': model_parameters.average_window_size
