@@ -339,7 +339,12 @@ class ModelsTestCase(TestCase):
             rate_threshold.valid_until = None
             rate_threshold.save()
             result = get_rate_thresholds(date(2018, 2, 1))
-            expected = {'very_high_value': 0.4, 'high_value': 0.3, 'medium_value': 0.2, 'low_value': 0.1}
+            expected = {
+                'very_high_value': {'label': 'Very high epidemic rate', 'value': 0.4},
+                'high_value': {'label': 'High epidemic rate', 'value': 0.3},
+                'medium_value': {'label': 'Medium epidemic rate', 'value': 0.2},
+                'low_value': {'label': 'Low epidemic rate', 'value': 0.1}
+            }
             self.assertDictEqual(result, expected)
 
     def tearDown(self):

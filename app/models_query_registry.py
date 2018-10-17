@@ -193,7 +193,7 @@ def get_google_terms_and_averages(
 
 def get_rate_thresholds(
         start_date: date
-) -> Dict[str, float]:
+) -> Dict[str, Dict]:
     """ Returns the current set of rate thresholds """
     result_set = DB.session.query(
         RateThresholdSet.low_value,
@@ -205,9 +205,21 @@ def get_rate_thresholds(
         .first()
     if result_set is not None:
         return {
-            "low_value": result_set[0],
-            "medium_value": result_set[1],
-            "high_value": result_set[2],
-            "very_high_value": result_set[3]
+            "low_value": {
+                "label": "Low epidemic rate",
+                "value": result_set[0]
+            },
+            "medium_value": {
+                "label": "Medium epidemic rate",
+                "value": result_set[1]
+            },
+            "high_value": {
+                "label": "High epidemic rate",
+                "value": result_set[2]
+            },
+            "very_high_value": {
+                "label": "Very high epidemic rate",
+                "value": result_set[3]
+            }
         }
     return {}
