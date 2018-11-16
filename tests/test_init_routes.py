@@ -57,6 +57,7 @@ class InitRoutesTestCase(TestCase):
                 'georegion': 'e',
                 'smoothing': 1
             },
+            'model_list': [{'id': 1, 'name': 'Test Model'}],
             'start_date': '2018-06-29',
             'end_date': '2018-06-29',
             'average_score': 1.23,

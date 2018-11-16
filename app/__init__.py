@@ -32,7 +32,8 @@ def create_app(config_name):
     def root_route():
         """ Default route (/). Returns the last 30 days of model scores for the default flu model """
         model_data, model_scores = get_default_flu_model_30days()
-        if not model_data:
+        flu_models = get_public_flu_models()
+        if not model_data or not flu_models:
             return '', status.HTTP_204_NO_CONTENT
         model_parameters = get_model_function(model_data['id'])
         datapoints = []
@@ -49,6 +50,13 @@ def create_app(config_name):
                 child.update(confidence_interval)
             datapoints.append(child)
         rate_thresholds = get_rate_thresholds(model_data['start_date'])
+        model_list = []
+        for flu_model in flu_models:
+            obj = {
+                'id': flu_model.id,
+                'name': flu_model.name
+            }
+            model_list.append(obj)
         result = {
             'id': model_data['id'],
             'name': model_data['name'],
@@ -57,6 +65,7 @@ def create_app(config_name):
                 'georegion': 'e',
                 'smoothing': model_parameters.average_window_size
             },
+            'model_list': model_list,
             'start_date': model_data['start_date'].strftime('%Y-%m-%d'),
             'end_date': model_data['end_date'].strftime('%Y-%m-%d'),
             'average_score': model_data['average_score'],
