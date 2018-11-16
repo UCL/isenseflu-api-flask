@@ -124,7 +124,7 @@ class InitRoutesTestCase(TestCase):
         with self.app.app_context():
             flumodel.save()
             model_function.save()
-        response = self.client().get('/scores/1?startDate=2018-05-30&endDate=2018-06-30')
+        response = self.client().get('/scores?id=1&startDate=2018-05-30&endDate=2018-06-30')
         result = response.get_json()
         expected = {
             'id': 1,
@@ -149,7 +149,7 @@ class InitRoutesTestCase(TestCase):
         }
         self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
-        response = self.client().get('/scores/1?startDate=2018-07-30&endDate=2018-06-30')
+        response = self.client().get('/scores?id=1&startDate=2018-07-30&endDate=2018-06-30')
         self.assertEqual(response.status_code, 400)
 
     def test_get_scores_resolution(self):
@@ -178,7 +178,7 @@ class InitRoutesTestCase(TestCase):
         with self.app.app_context():
             flumodel.save()
             model_function.save()
-        response = self.client().get('/scores/1?startDate=2018-05-30&endDate=2018-06-30&resolution=week')
+        response = self.client().get('/scores?id=1&startDate=2018-05-30&endDate=2018-06-30&resolution=week')
         result = response.get_json()
         self.assertEqual(len(result['datapoints']), 4)
 
@@ -208,7 +208,7 @@ class InitRoutesTestCase(TestCase):
         with self.app.app_context():
             flumodel.save()
             model_function.save()
-        response = self.client().get('/scores/1?startDate=2018-06-10&endDate=2018-06-10&smoothing=3')
+        response = self.client().get('/scores?id=1&startDate=2018-06-10&endDate=2018-06-10&smoothing=3')
         result = response.get_json()
         expected = {
             'displayModel': True,
@@ -254,7 +254,7 @@ class InitRoutesTestCase(TestCase):
             self.assertEqual(response.headers['Content-Disposition'], 'attachment; filename="Test Model.csv"')
 
     def test_get_scores_no_content(self):
-        response = self.client().get('/scores/1')
+        response = self.client().get('/scores?id=1')
         result = response.data
         self.assertEqual(result, b'')
         self.assertEqual(response.status_code, 204)

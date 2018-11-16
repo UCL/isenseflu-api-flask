@@ -89,9 +89,10 @@ def create_app(config_name):
             results.append(obj)
         return results, status.HTTP_200_OK
 
-    @app.route('/scores/<int:id>', methods=['GET'])
-    def scores_route(id):
+    @app.route('/scores', methods=['GET'])
+    def scores_route():
         """ Returns a list of model scores for a model id, start and end date """
+        id = int(request.args.get('id'))
         def_end_date = date.today() - timedelta(days=2)
         end_date = str(request.args.get('endDate', def_end_date.strftime('%Y-%m-%d')))
         def_start_date = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)
