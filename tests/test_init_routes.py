@@ -127,25 +127,24 @@ class InitRoutesTestCase(TestCase):
         response = self.client().get('/scores?id=1&startDate=2018-05-30&endDate=2018-06-30')
         result = response.get_json()
         expected = {
-            'id': 1,
-            'name': 'Test Model',
-            'sourceType': 'google',
-            'displayModel': True,
-            'parameters': {
-                'georegion': 'e',
-                'smoothing': 1
-            },
+            'modeldata': [
+                {
+                    'id': 1,
+                    'label': 'Test Model',
+                    'average_score': 1.23,
+                    'hasConfidenceInterval': True,
+                    'datapoints': [
+                        {
+                            'score_date': '2018-06-20',
+                            'score_value': 1.23
+                        }
+                    ]
+                }
+            ],
             'start_date': '2018-06-20',
             'end_date': '2018-06-20',
-            'hasConfidenceInterval': True,
-            'average_score': 1.23,
             'rate_thresholds': {},
-            'datapoints': [
-                {
-                    'score_date': '2018-06-20',
-                    'score_value': 1.23
-                }
-            ]
+            'dates': ['2018-06-20']
         }
         self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
@@ -180,7 +179,7 @@ class InitRoutesTestCase(TestCase):
             model_function.save()
         response = self.client().get('/scores?id=1&startDate=2018-05-30&endDate=2018-06-30&resolution=week')
         result = response.get_json()
-        self.assertEqual(len(result['datapoints']), 4)
+        self.assertEqual(len(result['modeldata'][0]['datapoints']), 4)
 
     def test_get_scores_smoothing(self):
         flumodel = FluModel()
@@ -211,22 +210,26 @@ class InitRoutesTestCase(TestCase):
         response = self.client().get('/scores?id=1&startDate=2018-06-10&endDate=2018-06-10&smoothing=3')
         result = response.get_json()
         expected = {
-            'displayModel': True,
             'rate_thresholds': {},
-            'datapoints': [
-                {'score_value': 2.0067340067340065, 'score_date': '2018-06-10'}
+            'modeldata': [
+                {
+                    'id': 1,
+                    'label': 'Test Model',
+                    'datapoints': [
+                        {
+                            'score_value': 2.0067340067340065,
+                            'score_date': '2018-06-10',
+                            'confidence_interval_lower': 0.0,   # should be None
+                            'confidence_interval_upper': 0.0    # should be None
+                        }
+                    ],
+                    'hasConfidenceInterval': True,
+                    'average_score': 2.0
+                }
             ],
-            'name': 'Test Model',
-            'sourceType': 'google',
             'start_date': '2018-06-10',
             'end_date': '2018-06-10',
-            'hasConfidenceInterval': True,
-            'average_score': 2.0,
-            'parameters': {
-                'smoothing': 1,
-                'georegion': 'e'
-            },
-            'id': 1
+            'dates': ['2018-06-10']
         }
         self.assertEqual(result, expected)
 
@@ -256,6 +259,7 @@ class InitRoutesTestCase(TestCase):
     def test_get_scores_no_content(self):
         response = self.client().get('/scores?id=1')
         result = response.data
+        print(result)
         self.assertEqual(result, b'')
         self.assertEqual(response.status_code, 204)
 

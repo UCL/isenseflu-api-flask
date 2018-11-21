@@ -12,7 +12,7 @@ from app.models_query_registry import get_existing_google_dates, get_google_term
     set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score, \
     get_model_function, get_google_terms_and_scores, get_google_terms_and_averages, \
     get_flu_model_for_id, get_public_flu_models, get_default_flu_model, get_default_flu_model_30days, \
-    get_rate_thresholds
+    get_rate_thresholds, get_flu_models_for_ids
 
 
 class ModelsTestCase(TestCase):
@@ -346,6 +346,23 @@ class ModelsTestCase(TestCase):
                 'low_value': {'label': 'Low epidemic rate', 'value': 0.1}
             }
             self.assertDictEqual(result, expected)
+
+    def test_get_flu_models_for_ids(self):
+        """
+        Scenario: Get a list of FluModels from an array of ids
+        """
+        with self.app.app_context():
+            for idx in range(1, 4):
+                flu_model = FluModel()
+                flu_model.id = idx
+                flu_model.name = 'Test model %d' % idx
+                flu_model.source_type = 'google'
+                flu_model.is_public = True
+                flu_model.is_displayed = True
+                flu_model.calculation_parameters = 'matlab_function,1'
+                flu_model.save()
+            result = get_flu_models_for_ids([1, 2])
+            self.assertEqual(len(result), 2)
 
     def tearDown(self):
         DB.drop_all(app=self.app)

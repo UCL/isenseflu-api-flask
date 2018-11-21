@@ -51,6 +51,11 @@ def get_flu_model_for_id(model_id: int) -> FluModel:
     return FluModel.query.filter_by(id=model_id).first()
 
 
+def get_flu_models_for_ids(model_ids: [int]) -> List[FluModel]:
+    """ Searches flu models by ids """
+    return FluModel.query.filter(FluModel.id.in_(model_ids)).all()
+
+
 def get_public_flu_models() -> List[FluModel]:
     """ Returns all public models """
     return FluModel.query.filter_by(is_public=True).all()

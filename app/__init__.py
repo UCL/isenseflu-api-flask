@@ -20,7 +20,7 @@ def create_app(config_name):
 
     from app.models_query_registry import get_flu_model_for_id, get_public_flu_models, \
         get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days, \
-        get_rate_thresholds
+        get_rate_thresholds, get_flu_models_for_ids
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -92,7 +92,7 @@ def create_app(config_name):
     @app.route('/scores', methods=['GET'])
     def scores_route():
         """ Returns a list of model scores for a model id, start and end date """
-        id = int(request.args.get('id'))
+        ids = request.args.getlist('id')
         def_end_date = date.today() - timedelta(days=2)
         end_date = str(request.args.get('endDate', def_end_date.strftime('%Y-%m-%d')))
         def_start_date = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)
@@ -103,58 +103,58 @@ def create_app(config_name):
             return '', status.HTTP_400_BAD_REQUEST
         if resolution not in ['day', 'week']:
             return '', status.HTTP_400_BAD_REQUEST
-        flu_model = get_flu_model_for_id(id)
-        scores = None
-        if flu_model is not None:
-            scores = get_model_scores_for_dates(
-                id,
-                datetime.strptime(start_date, '%Y-%m-%d').date(),
-                datetime.strptime(end_date, '%Y-%m-%d').date()
-            )
-        if scores is None:
-            return '', status.HTTP_204_NO_CONTENT
-        datapoints = []
-        if resolution == 'week':
-            scores = [s for s in scores if s.score_date.weekday() == 6]
-        for score in scores:
-            if smoothing == 0:
-                score_value = score.score_value
-                upper_conf = score.confidence_interval_upper
-                lower_conf = score.confidence_interval_lower
-            else:
-                score_value, upper_conf, lower_conf = score.moving_avg(smoothing)
-            child = {
-                'score_date': score.score_date.strftime('%Y-%m-%d'),
-                'score_value': score_value
-            }
-            if isinstance(score.confidence_interval_upper, Number) and \
-                    isinstance(score.confidence_interval_upper, Number):
-                confidence_interval = {
-                    'confidence_interval_upper': upper_conf,
-                    'confidence_interval_lower': lower_conf
+        flu_models = get_flu_models_for_ids(ids)
+        if flu_models is not None and len(flu_models) > 0:
+            model_list = []
+            date_list = []
+            for model in flu_models:
+                model_scores = get_model_scores_for_dates(
+                    model.id,
+                    datetime.strptime(start_date, '%Y-%m-%d').date(),
+                    datetime.strptime(end_date, '%Y-%m-%d').date()
+                )
+                if model_scores is None:
+                    return '', status.HTTP_204_NO_CONTENT
+                model_datapoints = []
+                if resolution == 'week':
+                    model_scores = [s for s in model_scores if s.score_date.weekday() == 6]
+                for ms in model_scores:
+                    if smoothing == 0:
+                        score_value = ms.score_value
+                        upper_conf = ms.confidence_interval_upper
+                        lower_conf = ms.confidence_interval_lower
+                    else:
+                        score_value, upper_conf, lower_conf = ms.moving_avg(smoothing)
+                    child = {
+                        'score_date': ms.score_date.strftime('%Y-%m-%d'),
+                        'score_value': score_value
+                    }
+                    if isinstance(upper_conf, Number) and isinstance(lower_conf, Number):
+                        confidence_interval = {
+                            'confidence_interval_upper': upper_conf,
+                            'confidence_interval_lower': lower_conf
+                        }
+                        child.update(confidence_interval)
+                    model_datapoints.append(child)
+                model_parameters = get_model_function(model.id)
+                model_obj = {
+                    'id': model.id,
+                    'label': model.name,
+                    'hasConfidenceInterval': model_parameters.has_confidence_interval,
+                    'average_score': sum([s.score_value for s in model_scores]) / float(len(model_scores)),
+                    'datapoints': model_datapoints
                 }
-                child.update(confidence_interval)
-            datapoints.append(child)
-        model_parameters = get_model_function(flu_model.id)
-        score_dates = [s.score_date for s in scores]
-        rate_thresholds = get_rate_thresholds(min(score_dates))
-        result = {
-            'id': flu_model.id,
-            'name': flu_model.name,
-            'sourceType': flu_model.source_type,
-            'displayModel': flu_model.is_displayed,
-            'hasConfidenceInterval': model_parameters.has_confidence_interval,
-            'parameters': {
-                'georegion': 'e',
-                'smoothing': model_parameters.average_window_size
-            },
-            'start_date': min(score_dates).strftime('%Y-%m-%d'),
-            'end_date': max(score_dates).strftime('%Y-%m-%d'),
-            'average_score': sum([s.score_value for s in scores]) / float(len(scores)),
-            'rate_thresholds': rate_thresholds,
-            'datapoints': datapoints
-        }
-        return result, status.HTTP_200_OK
+                model_list.append(model_obj)
+                date_list += [d.score_date.strftime('%Y-%m-%d') for d in model_scores if d.score_date not in date_list]
+            result = {
+                'modeldata': model_list,
+                'dates': date_list,
+                'start_date': min(date_list),
+                'end_date': max(date_list),
+                'rate_thresholds': get_rate_thresholds(min(date_list))
+            }
+            return result, status.HTTP_200_OK
+        return '', status.HTTP_204_NO_CONTENT
 
     @app.route('/csv/<int:id>', methods=['GET'])
     def csv_route(id):
