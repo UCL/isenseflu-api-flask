@@ -130,7 +130,7 @@ class InitRoutesTestCase(TestCase):
             'modeldata': [
                 {
                     'id': 1,
-                    'label': 'Test Model',
+                    'name': 'Test Model',
                     'average_score': 1.23,
                     'hasConfidenceInterval': True,
                     'datapoints': [
@@ -214,7 +214,7 @@ class InitRoutesTestCase(TestCase):
             'modeldata': [
                 {
                     'id': 1,
-                    'label': 'Test Model',
+                    'name': 'Test Model',
                     'datapoints': [
                         {
                             'score_value': 2.0067340067340065,

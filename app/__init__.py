@@ -139,7 +139,7 @@ def create_app(config_name):
                 model_parameters = get_model_function(model.id)
                 model_obj = {
                     'id': model.id,
-                    'label': model.name,
+                    'name': model.name,
                     'hasConfidenceInterval': model_parameters.has_confidence_interval,
                     'average_score': sum([s.score_value for s in model_scores]) / float(len(model_scores)),
                     'datapoints': model_datapoints
