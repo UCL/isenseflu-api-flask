@@ -156,9 +156,10 @@ def create_app(config_name):
             return result, status.HTTP_200_OK
         return '', status.HTTP_204_NO_CONTENT
 
-    @app.route('/csv/<int:id>', methods=['GET'])
-    def csv_route(id):
+    @app.route('/csv', methods=['GET'])
+    def csv_route():
         """ Returns a list of model scores and dates for a model id, start and end date """
+        ids = request.args.getlist('id')
         def_end_date = date.today() - timedelta(days=2)
         end_date = str(request.args.get('endDate', def_end_date.strftime('%Y-%m-%d')))
         def_start_date = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)
@@ -166,7 +167,38 @@ def create_app(config_name):
         if start_date > end_date:
             return '', status.HTTP_400_BAD_REQUEST
         flu_model = get_flu_model_for_id(id)
+        flu_models = get_flu_models_for_ids(ids)
         scores = None
+        if flu_models is not None and len(flu_models) > 0:
+            model_list = []
+            date_list = []
+            for model in model_list:
+                model_function = get_model_function(model.id)
+                model_scores = get_model_scores_for_dates(
+                    model.id,
+                    datetime.strptime(start_date, '%Y-%m-%d').date(),
+                    datetime.strptime(end_date, '%Y-%m-%d').date()
+                )
+                if model_scores is None:
+                    return '', status.HTTP_204_NO_CONTENT
+                model_datapoints = []
+                for ms in model_scores:
+                    child = {
+                        'score_date': ms.score_date.strftime('%Y-%m-%d'),
+                        'score_value': ms.score_value
+                    }
+                    if model_function.has_confidence_interval:
+                        confidence_interval = {
+                            'confidence_interval_upper': ms.confidence_interval_upper,
+                            'confidence_interval_lower': ms.confidence_interval_lower
+                        }
+                        child.update(confidence_interval)
+                    model_datapoints.append(child)
+                model_list.append(model_datapoints)
+                date_list += [d.score_date.strftime('%Y-%m-%d') for d in model_scores if d.score_date not in date_list]
+            if len(model_list) == 0:
+                return '', status.HTTP_204_NO_CONTENT
+
         if flu_model is not None:
             scores = get_model_scores_for_dates(
                 id,
