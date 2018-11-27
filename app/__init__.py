@@ -166,13 +166,11 @@ def create_app(config_name):
         start_date = str(request.args.get('startDate', def_start_date.strftime('%Y-%m-%d')))
         if start_date > end_date:
             return '', status.HTTP_400_BAD_REQUEST
-        flu_model = get_flu_model_for_id(id)
         flu_models = get_flu_models_for_ids(ids)
-        scores = None
         if flu_models is not None and len(flu_models) > 0:
             model_list = []
             date_list = []
-            for model in model_list:
+            for model in flu_models:
                 model_function = get_model_function(model.id)
                 model_scores = get_model_scores_for_dates(
                     model.id,
@@ -194,38 +192,34 @@ def create_app(config_name):
                         }
                         child.update(confidence_interval)
                     model_datapoints.append(child)
-                model_list.append(model_datapoints)
+                model_list.append({
+                    'name': model.name,
+                    'datapoints': model_datapoints
+                })
                 date_list += [d.score_date.strftime('%Y-%m-%d') for d in model_scores if d.score_date not in date_list]
             if len(model_list) == 0:
                 return '', status.HTTP_204_NO_CONTENT
-
-        if flu_model is not None:
-            scores = get_model_scores_for_dates(
-                id,
-                datetime.strptime(start_date, '%Y-%m-%d').date(),
-                datetime.strptime(end_date, '%Y-%m-%d').date()
-            )
-        if scores is None:
-            return '', status.HTTP_204_NO_CONTENT
-        datapoints = []
-        hasConfidenceInterval = False
-        for score in scores:
-            child = {
-                'score_date': score.score_date.strftime('%Y-%m-%d'),
-                'score_value': score.score_value
-            }
-            if isinstance(score.confidence_interval_upper, Number) and \
-                    isinstance(score.confidence_interval_upper, Number):
-                confidence_interval = {
-                    'confidence_interval_upper': score.confidence_interval_upper,
-                    'confidence_interval_lower': score.confidence_interval_lower
-                }
-                child.update(confidence_interval)
-                hasConfidenceInterval = True
-            datapoints.append(child)
-        fields = ['score_date', 'score_value']
-        if hasConfidenceInterval:
-            fields.extend(['confidence_interval_upper', 'confidence_interval_lower'])
-        return send_csv(datapoints, filename='%s.csv' % flu_model.name, fields=fields), status.HTTP_200_OK
+            datapoints = []
+            for dl in date_list:
+                point = dict()
+                point['score_date'] = dl
+                for md in model_list:
+                    score_key = 'score_%s' % md['name']
+                    # TODO: should be in try/catch
+                    score_value = next(s for s in md['score_value'] if md['score_date'] == dl)
+                    point[score_key] = score_value
+                    if 'confidence_interval_upper' in md:
+                        conf_upper_key = 'confidence_upper_%s' % md['name']
+                        conf_lower_key = 'confidence_lower_%s' % md['name']
+                        # TODO: should be in try/catch
+                        conf_upper_val = next(s for s in md['confidence_interval_upper'] if md['score_date'] == dl)
+                        conf_lower_val = next(s for s in md['confidence_interval_lower'] if md['score_date'] == dl)
+                        point[conf_upper_key] = conf_upper_val
+                        point[conf_lower_key] = conf_lower_val
+                datapoints.append(point)
+            fields = datapoints[0].keys()
+            filename = 'RawScores-%f' % datetime.now().timestamp()
+            return send_csv(datapoints, filename=filename, fields=fields), status.HTTP_200_OK
+        return '', status.HTTP_204_NO_CONTENT
 
     return app

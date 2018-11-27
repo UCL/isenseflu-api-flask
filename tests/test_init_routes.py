@@ -253,7 +253,7 @@ class InitRoutesTestCase(TestCase):
         flumodel.model_scores = datapoints
         with self.app.app_context():
             flumodel.save()
-            response = self.client().get('/csv/1?startDate=2018-06-10&endDate=2018-06-10')
+            response = self.client().get('/csv?id=1&tartDate=2018-06-10&endDate=2018-06-10')
             self.assertEqual(response.headers['Content-Disposition'], 'attachment; filename="Test Model.csv"')
 
     def test_get_scores_no_content(self):
