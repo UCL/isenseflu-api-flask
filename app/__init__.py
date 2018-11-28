@@ -206,19 +206,23 @@ def create_app(config_name):
                 for md in model_list:
                     score_key = 'score_%s' % md['name']
                     # TODO: should be in try/catch
-                    score_value = next(s for s in md['score_value'] if md['score_date'] == dl)
+                    score_value = next(s['score_value'] for s in md['datapoints'] if s['score_date'] == dl)
                     point[score_key] = score_value
                     if 'confidence_interval_upper' in md:
                         conf_upper_key = 'confidence_upper_%s' % md['name']
                         conf_lower_key = 'confidence_lower_%s' % md['name']
                         # TODO: should be in try/catch
-                        conf_upper_val = next(s for s in md['confidence_interval_upper'] if md['score_date'] == dl)
-                        conf_lower_val = next(s for s in md['confidence_interval_lower'] if md['score_date'] == dl)
+                        conf_upper_val = next(
+                            s['confidence_interval_upper'] for s in md['datapoints'] if s['score_date'] == dl
+                        )
+                        conf_lower_val = next(
+                            s['confidence_interval_lower'] for s in md['datapoints'] if s['score_date'] == dl
+                        )
                         point[conf_upper_key] = conf_upper_val
                         point[conf_lower_key] = conf_lower_val
                 datapoints.append(point)
             fields = datapoints[0].keys()
-            filename = 'RawScores-%f' % datetime.now().timestamp()
+            filename = 'RawScores-%d.csv' % round(datetime.now().timestamp() * 1000)
             return send_csv(datapoints, filename=filename, fields=fields), status.HTTP_200_OK
         return '', status.HTTP_204_NO_CONTENT
 

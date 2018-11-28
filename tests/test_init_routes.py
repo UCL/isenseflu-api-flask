@@ -249,12 +249,22 @@ class InitRoutesTestCase(TestCase):
             entry.score_date = d
             entry.calculation_timestamp = datetime.now()
             entry.score_value = 1 + 10 / d.day
+            entry.confidence_interval_lower = 0
+            entry.confidence_interval_upper = 2
             datapoints.append(entry)
         flumodel.model_scores = datapoints
+        model_function = ModelFunction()
+        model_function.id = 1
+        model_function.function_name = 'matlab_model'
+        model_function.average_window_size = 1
+        model_function.flu_model_id = 1
+        model_function.has_confidence_interval = True
         with self.app.app_context():
             flumodel.save()
+            model_function.save()
             response = self.client().get('/csv?id=1&tartDate=2018-06-10&endDate=2018-06-10')
-            self.assertEqual(response.headers['Content-Disposition'], 'attachment; filename="Test Model.csv"')
+            expected = r'attachment; filename=RawScores-\d{13}\.csv'
+            self.assertRegexpMatches(response.headers['Content-Disposition'], expected)
 
     def test_get_scores_no_content(self):
         response = self.client().get('/scores?id=1')
