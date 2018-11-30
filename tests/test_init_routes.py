@@ -278,7 +278,7 @@ class InitRoutesTestCase(TestCase):
         token_info.token_id = 1
         token_info.token = '79e11f5137ab996c5e202dc0166a68d4e3bece0af5b39c30705905210ee6e9a4'
         token_info.is_valid = True
-        token_info.user = 'Test User'
+        token_info.token_user = 'Test User'
         with self.app.app_context():
             flumodel.save()
             token_info.save()

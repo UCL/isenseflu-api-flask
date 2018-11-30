@@ -227,7 +227,7 @@ class TokenInfo(DB.Model):
 
     token_id = DB.Column(DB.Integer, primary_key=True)
     token = DB.Column(DB.Text, nullable=False)
-    user = DB.Column(DB.Text, nullable=False)
+    token_user = DB.Column(DB.Text, nullable=False)
     is_valid = DB.Column(DB.Boolean, default=False)
 
     def save(self):
