@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 
 from app import DB
 from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm, \
-    ModelFunction, DefaultFluModel, RateThresholdSet
+    ModelFunction, DefaultFluModel, RateThresholdSet, TokenInfo
 
 
 def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
@@ -228,3 +228,17 @@ def get_rate_thresholds(
             }
         }
     return {}
+
+
+def has_valid_token(token: str) -> bool:
+    """ Checks if token is valid """
+    return DB.session.query(TokenInfo.query.filter_by(token=token, is_valid=True).exists()).scalar()
+
+
+def set_model_display(model_id: int, display: bool) -> bool:
+    """ Configures model to be displayed or hidden on/from the website """
+    rows = FluModel.query.filter_by(id=model_id).update(dict(is_public=display))
+    DB.session.commit()
+    if rows == 1:
+        return True
+    return False

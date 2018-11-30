@@ -2,7 +2,7 @@ from unittest import TestCase
 from datetime import date, datetime
 
 from app import create_app, DB
-from app.models import FluModel, ModelScore, ModelFunction, DefaultFluModel
+from app.models import FluModel, ModelScore, ModelFunction, DefaultFluModel, TokenInfo
 
 
 class InitRoutesTestCase(TestCase):
@@ -266,10 +266,32 @@ class InitRoutesTestCase(TestCase):
             expected = r'attachment; filename=RawScores-\d{13}\.csv'
             self.assertRegexpMatches(response.headers['Content-Disposition'], expected)
 
+    def test_post_config(self):
+        flumodel = FluModel()
+        flumodel.id = 1
+        flumodel.name = 'Test Model'
+        flumodel.is_public = True
+        flumodel.is_displayed = True
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
+        token_info = TokenInfo()
+        token_info.token_id = 1
+        token_info.token = '79e11f5137ab996c5e202dc0166a68d4e3bece0af5b39c30705905210ee6e9a4'
+        token_info.is_valid = True
+        token_info.user = 'Test User'
+        with self.app.app_context():
+            flumodel.save()
+            token_info.save()
+        response = self.client().post(
+            '/config',
+            data=dict(model_id=1, is_displayed=True),
+            headers={'Authorization': 'Token 5GOngP4EbHiwA4R32bv516tpKkBEAOl8'}
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test_get_scores_no_content(self):
         response = self.client().get('/scores?id=1')
         result = response.data
-        print(result)
         self.assertEqual(result, b'')
         self.assertEqual(response.status_code, 204)
 

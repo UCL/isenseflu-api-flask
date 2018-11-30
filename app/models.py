@@ -218,3 +218,19 @@ class RateThresholdSet(DB.Model):
         """ Convenience method to save current instance """
         DB.session.add(self)
         DB.session.commit()
+
+
+class TokenInfo(DB.Model):
+    """
+    ORM Model representing a set of tokens
+    """
+
+    token_id = DB.Column(DB.Integer, primary_key=True)
+    token = DB.Column(DB.Text, nullable=False)
+    user = DB.Column(DB.Text, nullable=False)
+    is_valid = DB.Column(DB.Boolean, default=False)
+
+    def save(self):
+        """ Convenience method to save current instance """
+        DB.session.add(self)
+        DB.session.commit()
