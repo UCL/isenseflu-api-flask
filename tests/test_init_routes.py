@@ -89,7 +89,7 @@ class InitRoutesTestCase(TestCase):
             'id': 1,
             'name': 'Test Model'
         }]
-        self.assertEqual(result,  expected)
+        self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
 
     def test_get_models_no_content(self):
@@ -294,6 +294,30 @@ class InitRoutesTestCase(TestCase):
         result = response.data
         self.assertEqual(result, b'')
         self.assertEqual(response.status_code, 204)
+
+    def test_get_all_models(self):
+        flumodel = FluModel()
+        flumodel.name = 'Test Model'
+        flumodel.is_public = False
+        flumodel.is_displayed = False
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
+        token_info = TokenInfo()
+        token_info.token_id = 1
+        token_info.token = '79e11f5137ab996c5e202dc0166a68d4e3bece0af5b39c30705905210ee6e9a4'
+        token_info.is_valid = True
+        token_info.token_user = 'Test User'
+        with self.app.app_context():
+            flumodel.save()
+            token_info.save()
+        response = self.client().get('/allmodels', headers={'Authorization': 'Token 5GOngP4EbHiwA4R32bv516tpKkBEAOl8'})
+        result = response.get_json()
+        expected = [{
+            'id': 1,
+            'name': 'Test Model'
+        }]
+        self.assertEqual(result, expected)
+        self.assertEqual(response.status_code, 200)
 
     def tearDown(self):
         DB.drop_all(app=self.app)

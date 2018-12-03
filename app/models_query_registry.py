@@ -61,6 +61,11 @@ def get_public_flu_models() -> List[FluModel]:
     return FluModel.query.filter_by(is_public=True).all()
 
 
+def get_all_flu_models() -> List[FluModel]:
+    """ Returns all models, public and private """
+    return FluModel.query.all()
+
+
 def get_model_scores_for_dates(model_id: int, start_date: date, end_date: date) -> List[ModelScore]:
     """ Returns a list of model scores for a model id, start and end date """
     return ModelScore.query.filter(

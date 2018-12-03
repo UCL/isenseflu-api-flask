@@ -23,7 +23,7 @@ def create_app(config_name):
 
     from app.models_query_registry import get_flu_model_for_id, get_public_flu_models, \
         get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days, \
-        get_rate_thresholds, get_flu_models_for_ids, has_valid_token, set_model_display
+        get_rate_thresholds, get_flu_models_for_ids, has_valid_token, set_model_display, get_all_flu_models
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -242,6 +242,28 @@ def create_app(config_name):
                 return 'Parameters missing', status.HTTP_400_BAD_REQUEST
             if set_model_display(int(request.form['model_id']), request.form['is_displayed'] == 'True'):
                 return '', status.HTTP_200_OK
+        return '', status.HTTP_400_BAD_REQUEST
+
+    @app.route('/allmodels', methods=['GET'])
+    def all_models_route():
+        """ Lists all models available, public and private """
+        if 'Authorization' in request.headers and request.headers['Authorization'].startswith('Token '):
+            token = request.headers['Authorization'].split()[1]
+            sha_token = hashlib.sha256()
+            sha_token.update(token.encode('UTF-8'))
+            if not has_valid_token(sha_token.hexdigest()):
+                return '', status.HTTP_401_UNAUTHORIZED
+            flu_models = get_all_flu_models()
+            if not flu_models:
+                return '', status.HTTP_204_NO_CONTENT
+            results = []
+            for flu_model in flu_models:
+                obj = {
+                    'id': flu_model.id,
+                    'name': flu_model.name
+                }
+                results.append(obj)
+            return results, status.HTTP_200_OK
         return '', status.HTTP_400_BAD_REQUEST
 
     return app
