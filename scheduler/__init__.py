@@ -11,7 +11,7 @@ from apscheduler.triggers.cron import CronTrigger
 from flask_api import FlaskAPI
 
 from app.models_query_registry import has_model, get_last_score_date
-from .score_calculator import run
+from .score_calculator import run, runsched
 
 logging.basicConfig()
 logging.getLogger('apscheduler').setLevel(logging.DEBUG)
@@ -34,8 +34,8 @@ class Scheduler(object):
             start = get_last_score_date(model_id) + timedelta(days=1)
             end = date.today() - timedelta(days=2)
             self.scheduler.add_job(
-                func=run,
-                kwargs={"model_id": model_id, "start": start, "end": end},
+                func=runsched,
+                kwargs={"model_id": model_id, "start": start, "end": end, "app": self.flask_app},
                 trigger=CronTrigger.from_crontab(crontab),
                 misfire_grace_time=3600
             )

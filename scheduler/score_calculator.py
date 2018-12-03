@@ -3,6 +3,7 @@
 """
 
 from datetime import date
+from flask_api import FlaskAPI
 from logging import INFO, log, basicConfig
 from os import getenv
 
@@ -56,3 +57,9 @@ def run(model_id: int, start: date, end: date):
             log(INFO, 'Latest ModelScore value sent to message queue')
     else:
         log(INFO, 'Model scores have already been collected for this time period')
+
+
+def runsched(model_id: int, start: date, end: date, app: FlaskAPI):
+    """ Calculate the model score for the date range specified inside the scheduler """
+    with app.app_context():
+        run(model_id, start, end)
