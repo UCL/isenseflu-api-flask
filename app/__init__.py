@@ -6,7 +6,6 @@ from datetime import date, timedelta, datetime
 from numbers import Number
 from flask import request
 from flask_api import FlaskAPI, status
-from flask_cors import CORS
 from flask_csv import send_csv
 from flask_sqlalchemy import SQLAlchemy
 
@@ -29,7 +28,6 @@ def create_app(config_name):
     app.config.from_object(app_config[config_name])
     app.config.from_pyfile('config.ini', silent=True)
     DB.init_app(app)
-    CORS(app)
 
     @app.route('/', methods=['GET'])
     def root_route():
