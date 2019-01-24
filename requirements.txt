@@ -1,12 +1,12 @@
-apscheduler==3.5.1
-Flask-API==1.0
-Flask-Cors==3.0.6
-Flask-CSV==1.1.0
-Flask-SQLAlchemy==2.3.2
+apscheduler==3.5.3
+Flask-API==1.1
+Flask-Cors==3.0.7
+Flask-CSV==1.2.0
+Flask-Migrate==2.3.1
 Flask-Script==2.0.6
-Flask-Migrate==2.2.1
-google-api-python-client==1.7.4
+Flask-SQLAlchemy==2.3.2
+google-api-python-client==1.7.7
 gunicorn==19.9.0
-psycopg2==2.7.5 --no-binary psycopg2
+psycopg2==2.7.7
 stompest==2.3.0
-typing==3.6.4
+typing==3.6.6
