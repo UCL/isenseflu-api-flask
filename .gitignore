@@ -6,3 +6,5 @@ venv
 
 .coverage
 htmlcov
+
+octave-workspace
