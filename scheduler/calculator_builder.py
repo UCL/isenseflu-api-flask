@@ -109,8 +109,8 @@ class OctaveCalculator(AbstractCalculator):
     """
 
     def __init__(self):
-        from oct2py import octave
-        self.engine = octave
+        from oct2py import Oct2Py
+        self.engine = Oct2Py()
         self.engine.cd("octave")
         self.engine.run("gpml/startup.m")
 
@@ -128,12 +128,11 @@ class OctaveCalculator(AbstractCalculator):
         """
         terms = array([[s[0] for s in averages]]).T
         scores = array([[s[1] for s in averages]]).T
-        outname = 'score_value'
         self.engine.push('terms', terms)
         self.engine.push('scores', scores)
-        self.engine.push(outname, None)
-        self.engine.eval("%s = %s(terms,scores,%s)" % (outname, matlab_function, outname))
-        return self.engine.pull(outname)
+        self.engine.eval("y_inf = %s(terms,scores)" % (matlab_function))
+        score = self.engine.pull('y_inf')
+        return float(score)
 
     def calculate_model_score_and_confidence(self,
                                              matlab_function: str,
@@ -144,20 +143,13 @@ class OctaveCalculator(AbstractCalculator):
         It returns a tuple containing the model sscore followed by the lower
         and the upper bound confidence interval
         """
-        fhin, fhout = _write_tempfile(averages)
-        self.engine.eval("%s('%s','%s')" % (matlab_function, fhin.name, fhout.name))
-        value = str(open(fhout.name).read().strip())
-        fhin.close()
-        fhout.close()
-        return float(value[0]), float(value[1]), float(value[2])
-
-
-def _write_tempfile(averages):
-        fhin = NamedTemporaryFile(mode='w+t', prefix='isenseflu-octave-input.')
-        fhout = NamedTemporaryFile(mode='w+t', prefix='isenseflu-octave-output.')
-        fhin.write('\n'.join('%s,%f' % a for a in averages))
-        fhin.flush()
-        return fhin, fhout
+        terms = array([[s[0] for s in averages]]).T
+        scores = array([[s[1] for s in averages]]).T
+        self.engine.push('terms', terms)
+        self.engine.push('scores', scores)
+        self.engine.eval("[y_inf, y_inf_lower, y_inf_upper] = %s(terms,scores)" % matlab_function)
+        score = self.engine.pull(['y_inf', 'y_inf_lower', 'y_inf_upper'])
+        return float(score[0]), float(score[1]), float(score[2])
 
 
 class RemoteCalculator(AbstractCalculator):
