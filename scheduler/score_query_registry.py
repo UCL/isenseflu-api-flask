@@ -9,8 +9,8 @@ from app.models_query_registry import get_existing_google_dates, get_google_term
     set_google_scores_for_term, set_google_date_for_model_id, get_existing_model_dates, \
     get_google_terms_and_scores, get_google_terms_and_averages, set_model_score, \
     set_model_score_confidence_interval, get_model_function
+from .calculator_builder import Calculator
 from .google_batch import GoogleBatch
-from .matlab_client import MatlabClient
 
 
 def get_days_missing_google_score(model_id: int, start: date, end: date) -> int:
@@ -116,7 +116,7 @@ def get_moving_averages_or_scores(
 
 def set_and_get_model_score(
         model_id: int,
-        matlab_client: MatlabClient,
+        calculator: Calculator,
         matlab_function: Tuple[str, bool],
         google_scores: List[Tuple[str, float]],
         score_date: date
@@ -126,10 +126,10 @@ def set_and_get_model_score(
     """
     with_confidence_interval = matlab_function[1]
     if not with_confidence_interval:
-        score = matlab_client.calculate_model_score(matlab_function[0], google_scores)
+        score = calculator.calculate_model_score(matlab_function[0], google_scores)
         set_model_score(model_id, score_date, score)
         return score
-    score, lower, upper = matlab_client.calculate_model_score_and_confidence(
+    score, lower, upper = calculator.calculate_model_score_and_confidence(
         matlab_function[0],
         google_scores
     )

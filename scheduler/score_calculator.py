@@ -7,8 +7,8 @@ from flask_api import FlaskAPI
 from logging import INFO, log, basicConfig
 from os import getenv
 
+from .calculator_builder import build_calculator, CalculatorType
 from .google_api_client import GoogleApiClient
-from .matlab_client import build_matlab_client
 from .message_client import build_message_client
 from .score_query_registry import get_date_ranges_google_score,\
     get_google_batch,\
@@ -39,13 +39,14 @@ def run(model_id: int, start: date, end: date):
         model_function = get_matlab_function_attr(model_id)
         msg_score = None
         msg_date = None
-        matlab_client = build_matlab_client()
+        calculator_type = CalculatorType[getenv('CALCULATOR_TYPE', 'OCTAVE')]
+        calculator_engine = build_calculator(calculator_type)
         for missing_model_date in missing_model_dates:
             scores_or_averages = get_moving_averages_or_scores(model_id, model_function['average_window_size'],
                                                                missing_model_date)
             msg_score = set_and_get_model_score(
                 model_id,
-                matlab_client,
+                calculator_engine,
                 (model_function['matlab_function'], model_function['has_confidence_interval']),
                 scores_or_averages,
                 missing_model_date
