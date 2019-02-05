@@ -15,7 +15,7 @@ class CalculatorType(Enum):
     MATLAB, OCTAVE, REMOTE = range(3)
 
 
-class AbstractCalculator(ABC):
+class Calculator(ABC):
     """
     Abstract base class to define methods available in MATLAB/OCTAVE clients
     """
@@ -45,7 +45,7 @@ class AbstractCalculator(ABC):
         pass
 
 
-class MatlabCalculator(AbstractCalculator):
+class MatlabCalculator(Calculator):
     """
     Caller to a local installation of Matlab
     """
@@ -103,7 +103,7 @@ class MatlabCalculator(AbstractCalculator):
         return fhin, fhout
 
 
-class OctaveCalculator(AbstractCalculator):
+class OctaveCalculator(Calculator):
     """
     Caller to a local installation of GNU Octave
     """
@@ -152,7 +152,7 @@ class OctaveCalculator(AbstractCalculator):
         return float(score[0]), float(score[1]), float(score[2])
 
 
-class RemoteCalculator(AbstractCalculator):
+class RemoteCalculator(Calculator):
     """
     Caller to a remote engine via REST APIs (not yet implemented)
     """
@@ -180,11 +180,11 @@ class RemoteCalculator(AbstractCalculator):
         raise NotImplementedError
 
 
-def build_calculator(calculator_type: CalculatorType):
+def build_calculator(calculator_type: CalculatorType) -> Calculator:
     """
     Builds a caller to a calculation engine
     :param calculator_type: a CalculatorType enum member, either MATLAB, OCTAVE or REMOTE
-    :return: An implementation of AbstractCalculator
+    :return: An implementation of Calculator
     """
     if calculator_type is CalculatorType.MATLAB:
         return MatlabCalculator()

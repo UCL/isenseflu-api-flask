@@ -43,8 +43,8 @@ class ScoreCalculatorTestCase(TestCase):
             model_score.score_value = 0.5
             model_score.region = 'e'
             model_score.save()
-            with patch.multiple('scheduler.score_calculator', build_matlab_client=DEFAULT) as mock_dict:
-                matlab_client = mock_dict['build_matlab_client'].return_value = Mock()
+            with patch.multiple('scheduler.score_calculator', build_calculator=DEFAULT) as mock_dict:
+                matlab_client = mock_dict['build_calculator'].return_value = Mock()
                 matlab_client.calculate_model_score.return_value = 1.0
                 result_before = ModelScore.query.filter_by(flu_model_id=1).all()
                 self.assertListEqual(result_before, [model_score])
