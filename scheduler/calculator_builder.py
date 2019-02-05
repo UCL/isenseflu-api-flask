@@ -126,7 +126,7 @@ class OctaveCalculator(Calculator):
         It returns a single float corresponding to the score without confidence
         intervals
         """
-        terms = array([[s[0] for s in averages]]).T
+        terms = array([[s[0] for s in averages]], dtype=object).T
         scores = array([[s[1] for s in averages]]).T
         self.engine.push('terms', terms)
         self.engine.push('scores', scores)
@@ -143,7 +143,7 @@ class OctaveCalculator(Calculator):
         It returns a tuple containing the model sscore followed by the lower
         and the upper bound confidence interval
         """
-        terms = array([[s[0] for s in averages]]).T
+        terms = array([[s[0] for s in averages]], dtype=object).T
         scores = array([[s[1] for s in averages]]).T
         self.engine.push('terms', terms)
         self.engine.push('scores', scores)
