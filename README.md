@@ -8,9 +8,9 @@ OpenAPI 3.0.1 Definition Document: https://github.com/UCL/fludetector-openapi
 
 ## Requirements
 
-- Python 3.5
-- Pip
-- SQLite
+- Python 3.6
+- SQLite (for local testing environment)
+- PostgreSQL
 
 ## Installation
 
@@ -29,8 +29,8 @@ Set the variable `APP_CONFIG` to one of these values:
 - `development`
 - `testing`
 - `staging`
-- `production-single`: For calling a local instance of MATLAB
-- `production-multi`: For calling a remote instance of MATLAB
+- `production-single`: For calling a local instance of MATLAB/Octave
+- `production-multi`: For calling a remote instance of MATLAB/Octave
 
 All environments use a remote instance of PostgreSQL 10 as a database server, apart from `testing` that uses an 
 in-memory instance of SQLite.
@@ -43,12 +43,15 @@ Set the variable `DATABASE_URL` if using any environment other than `testing`:
 DATABASE_URL="postgresql://dbuser:dbpass@dbhost/dbname"
 ```
 
-Create the database tables in PostgreSQL with the following series of commands:
+#### Optional:
+
+If testing against an empty database, create the database tables in PostgreSQL with the following series of commands:
 ```commandline
 python manage.py db init
 python manage.py db migrate
 python manage.py db upgrade
 ```
+Skip if an existing instance of PostgreSQL
 
 ## Testing
 
