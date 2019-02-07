@@ -32,10 +32,11 @@ def test():
 
 
 @MANAGER.command
-def run_model_sched(model_id, cron):
+def run_model_sched(model_ids_input, cron):
     """ Runs a scheduler to calculate model scores. """
     scheduler = Scheduler(APP)
-    scheduler.run_model(model_id, cron)
+    model_ids = [int(m) for m in model_ids_input.split(',')]
+    scheduler.run_model(model_ids, cron)
 
 
 @MANAGER.command

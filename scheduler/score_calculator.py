@@ -6,6 +6,7 @@ from datetime import date
 from flask_api import FlaskAPI
 from logging import INFO, log, basicConfig
 from os import getenv
+from typing import List
 
 from .calculator_builder import build_calculator, CalculatorType
 from .google_api_client import GoogleApiClient
@@ -60,7 +61,8 @@ def run(model_id: int, start: date, end: date):
         log(INFO, 'Model scores have already been collected for this time period')
 
 
-def runsched(model_id: int, start: date, end: date, app: FlaskAPI):
+def runsched(model_id_list: List[int], start: date, end: date, app: FlaskAPI):
     """ Calculate the model score for the date range specified inside the scheduler """
     with app.app_context():
-        run(model_id, start, end)
+        for model_id in model_id_list:
+            run(model_id, start, end)

@@ -5,6 +5,7 @@
 import logging
 
 from datetime import date, timedelta
+from typing import List
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -26,16 +27,17 @@ class Scheduler(object):
         self.flask_app = app
         self.scheduler = BlockingScheduler()
 
-    def run_model(self, model_id: int, crontab: str):
+    def run_model(self, model_id_list: List[int], crontab: str):
         """ Adds the calculattion of model scores for an id to the scheduler """
         with self.flask_app.app_context():
-            if not has_model(model_id):
-                raise ValueError('Could not find model with that ID')
+            for model_id in model_id_list:
+                if not has_model(model_id):
+                    raise ValueError('Could not find model with that ID')
             start = get_last_score_date(model_id) + timedelta(days=1)
             end = date.today() - timedelta(days=2)
             self.scheduler.add_job(
                 func=runsched,
-                kwargs={"model_id": model_id, "start": start, "end": end, "app": self.flask_app},
+                kwargs={"model_id_list": model_id_list, "start": start, "end": end, "app": self.flask_app},
                 trigger=CronTrigger.from_crontab(crontab),
                 misfire_grace_time=3600
             )
