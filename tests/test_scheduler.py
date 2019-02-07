@@ -27,7 +27,7 @@ class SchedulerTestCase(TestCase):
         with self.app.app_context():
             scheduler = Scheduler(self.app)
             with self.assertRaises(ValueError):
-                scheduler.run_model(1, '')
+                scheduler.run_model([1], '')
 
     def test_run_model(self):
         """
@@ -54,7 +54,7 @@ class SchedulerTestCase(TestCase):
                 scheduler.flask_app = self.app
                 from apscheduler.schedulers.background import BackgroundScheduler
                 scheduler.scheduler = BackgroundScheduler()
-                scheduler.run_model(flumodel.id, "* * * * *")
+                scheduler.run_model([flumodel.id], "* * * * *")
 
     def tearDown(self):
         DB.drop_all(app=self.app)
