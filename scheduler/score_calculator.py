@@ -2,12 +2,13 @@
  Run calculation of Model Scores
 """
 
-from datetime import date
+from datetime import date, timedelta
 from flask_api import FlaskAPI
 from logging import INFO, log, basicConfig
 from os import getenv
 from typing import List
 
+from app.models_query_registry import get_last_score_date
 from .calculator_builder import build_calculator, CalculatorType
 from .google_api_client import GoogleApiClient
 from .message_client import build_message_client
@@ -61,8 +62,10 @@ def run(model_id: int, start: date, end: date):
         log(INFO, 'Model scores have already been collected for this time period')
 
 
-def runsched(model_id_list: List[int], start: date, end: date, app: FlaskAPI):
+def runsched(model_id_list: List[int], app: FlaskAPI):
     """ Calculate the model score for the date range specified inside the scheduler """
     with app.app_context():
         for model_id in model_id_list:
+            start = get_last_score_date(model_id) + timedelta(days=1)
+            end = date.today() - timedelta(days=2)
             run(model_id, start, end)

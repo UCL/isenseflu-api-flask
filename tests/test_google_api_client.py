@@ -8,7 +8,6 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpMock, RequestMockBuilder
 from httplib2 import Response
 
@@ -77,10 +76,11 @@ class GoogleApiClientTestCase(TestCase):
             'code': 403,
             'message': 'dailyLimitExceeded'
         }
+        error_bytes = b'{"error" : { "code" : 403, "message" : "dailyLimitExceeded" } }'
         response = Response({'status': 403, 'reason': 'dailyLimitExceeded', 'error': error})
         request_builder = RequestMockBuilder(
             {
-                'trends.getTimelinesForHealth': (response, b'{}')
+                'trends.getTimelinesForHealth': (response, error_bytes)
             }
         )
         with patch.object(GoogleApiClient, '__init__', lambda x: None):
@@ -102,25 +102,25 @@ class GoogleApiClientTestCase(TestCase):
             except RuntimeError as runtime_error:
                 self.assertRegex(str(runtime_error), '^dailyLimitExceeded: blocked until ')
 
-    def test_http_error(self):
+    def test_backend_error(self):
         """
-        Scenario: Evaluate generation of error raising logic when calls to
-        Google API returns an error code other than 403.
+        Scenario: Evaluate behaviour when Google API returns http/500 (Backend Error)
         Given a list of terms of type List[str]
         And start date in ISO format
         And end date in ISO format
-        When Google API returns an HTTP error code other than 403
-        Then GoogleApiClient#fetch_google_scores() propagates HttpError
+        When Google API returns HTTP 403
+        Then GoogleApiClient#fetch_google_scores() logs the HttpError
         """
         http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
         error = {
-            'code': 400,
-            'message': 'badRequest'
+            'code': 500,
+            'message': 'Backend Error'
         }
-        response = Response({'status': 400, 'reason': 'badRequest', 'error': error})
+        error_bytes = b'{"error" : { "code" : 500, "message" : "backendError" } }'
+        response = Response({'status': 500, 'reason': 'backendError', 'error': error})
         request_builder = RequestMockBuilder(
             {
-                'trends.getTimelinesForHealth': (response, b'{}')
+                'trends.getTimelinesForHealth': (response, error_bytes)
             }
         )
         with patch.object(GoogleApiClient, '__init__', lambda x: None):
@@ -137,8 +137,49 @@ class GoogleApiClientTestCase(TestCase):
             terms = ['flu']
             start = date.today() - timedelta(days=5)
             end = start + timedelta(days=1)
-            with self.assertRaises(HttpError):
+            with self.assertLogs(level='WARNING') as logContext:
                 instance.fetch_google_scores(terms, start, end)
+            self.assertListEqual(logContext.output, ['WARNING:root:<HttpError 500 "backendError">'])
+
+    def test_http_error(self):
+        """
+        Scenario: Evaluate generation of error raising logic when calls to
+        Google API returns an error code other than 403.
+        Given a list of terms of type List[str]
+        And start date in ISO format
+        And end date in ISO format
+        When Google API returns an HTTP error code other than 403
+        Then GoogleApiClient#fetch_google_scores() logs the HttpError
+        """
+        http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
+        error = {
+            'code': 400,
+            'message': 'badRequest'
+        }
+        error_bytes = b'{"error" : { "code" : 400, "message" : "badRequest" } }'
+        response = Response({'status': 400, 'reason': 'badRequest', 'error': error})
+        request_builder = RequestMockBuilder(
+            {
+                'trends.getTimelinesForHealth': (response, error_bytes)
+            }
+        )
+        with patch.object(GoogleApiClient, '__init__', lambda x: None):
+            instance = GoogleApiClient()
+            instance.service = build(
+                serviceName=SERVICE_NAME,
+                version=SERVICE_VERSION,
+                http=http,
+                developerKey='APIKEY',
+                requestBuilder=request_builder,
+                cache_discovery=False
+            )
+            instance.block_until = None
+            terms = ['flu']
+            start = date.today() - timedelta(days=5)
+            end = start + timedelta(days=1)
+            with self.assertLogs(level='WARNING') as logContext:
+                instance.fetch_google_scores(terms, start, end)
+            self.assertListEqual(logContext.output, ['WARNING:root:<HttpError 400 "badRequest">'])
 
     def test_blocked_until(self):
         """
