@@ -2,7 +2,7 @@
  Tests calculation of model scores
 """
 
-from datetime import date
+from datetime import date, timedelta
 from unittest import TestCase
 from unittest.mock import patch, DEFAULT, Mock
 
@@ -51,6 +51,24 @@ class ScoreCalculatorTestCase(TestCase):
                 score_calculator.run(1, date(2018, 1, 1), date(2018, 1, 2))
                 result_after = ModelScore.query.filter_by(flu_model_id=1).all()
                 self.assertEqual(len(result_after), 2)
+
+    def test_runsched(self):
+        """
+        Scenario: Test runsched function to calculate model scores
+        Given a last score_date of date.today() - timedelta(days=4)
+        Then score_calculator.run is called with a start date of date.today() - timedelta(days=3)
+        And end date of date.today() - timedelta(days=2)
+        """
+        with self.app.app_context():
+            model_score = ModelScore()
+            model_score.flu_model_id = 1
+            model_score.score_date = date.today() - timedelta(days=4)
+            model_score.score_value = 0.5
+            model_score.region = 'e'
+            model_score.save()
+        with patch('scheduler.score_calculator.run') as patched_run:
+            score_calculator.runsched([1], self.app)
+            patched_run.assert_called_with(1, date.today() - timedelta(days=3), date.today() - timedelta(days=2))
 
     def tearDown(self):
         DB.drop_all(app=self.app)

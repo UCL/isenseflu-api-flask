@@ -8,7 +8,6 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpMock, RequestMockBuilder
 from httplib2 import Response
 
@@ -110,7 +109,7 @@ class GoogleApiClientTestCase(TestCase):
         And start date in ISO format
         And end date in ISO format
         When Google API returns HTTP 403
-        Then GoogleApiClient#fetch_google_scores() raises a HttpError
+        Then GoogleApiClient#fetch_google_scores() logs the HttpError
         """
         http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
         error = {
@@ -150,7 +149,7 @@ class GoogleApiClientTestCase(TestCase):
         And start date in ISO format
         And end date in ISO format
         When Google API returns an HTTP error code other than 403
-        Then GoogleApiClient#fetch_google_scores() propagates HttpError
+        Then GoogleApiClient#fetch_google_scores() logs the HttpError
         """
         http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
         error = {
