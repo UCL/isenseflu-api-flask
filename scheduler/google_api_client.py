@@ -3,6 +3,7 @@
 """
 
 from os import getenv
+import json
 import time
 from typing import List, Dict, Union
 
@@ -91,12 +92,14 @@ class GoogleApiClient:
             return response['lines']
         except HttpError as http_error:
             code = http_error.resp['error']['code']
-            reason = http_error.resp['error']['message']
+            data = json.loads(http_error.content.decode('utf-8'))
+            reason = data['error']['message']
             if code == 403 and reason == 'dailyLimitExceeded':
                 self.block_until = datetime.combine(date.today() + timedelta(days=1), dtime.min)
                 raise RuntimeError('%s: blocked until %s' % (reason, self.block_until))
             else:
-                raise http_error
+                import logging
+                logging.warning(http_error)
 
     def is_accepting_calls(self):
         """
