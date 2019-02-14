@@ -91,15 +91,16 @@ class GoogleApiClient:
             response = graph.execute()
             return response['lines']
         except HttpError as http_error:
-            code = http_error.resp['error']['code']
             data = json.loads(http_error.content.decode('utf-8'))
-            reason = data['error']['message']
+            code = data['error']['code']
+            reason = data['error']['errors'][0]['reason']
             if code == 403 and reason == 'dailyLimitExceeded':
                 self.block_until = datetime.combine(date.today() + timedelta(days=1), dtime.min)
                 raise RuntimeError('%s: blocked until %s' % (reason, self.block_until))
             else:
                 import logging
                 logging.warning(http_error)
+            return []
 
     def is_accepting_calls(self):
         """

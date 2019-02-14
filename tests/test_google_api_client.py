@@ -72,12 +72,11 @@ class GoogleApiClientTestCase(TestCase):
         Then GoogleApiClient#fetch_google_scores() raises a RuntimeError
         """
         http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
-        error = {
-            'code': 403,
-            'message': 'dailyLimitExceeded'
-        }
-        error_bytes = b'{"error" : { "code" : 403, "message" : "dailyLimitExceeded" } }'
-        response = Response({'status': 403, 'reason': 'dailyLimitExceeded', 'error': error})
+        error_bytes = b'{"error" : { ' \
+                      b'"code" : 403, ' \
+                      b'"message" : "Daily Limit Exceeded", ' \
+                      b'"errors" : [{ "reason" : "dailyLimitExceeded" }] } }'
+        response = Response({'status': 403})
         request_builder = RequestMockBuilder(
             {
                 'trends.getTimelinesForHealth': (response, error_bytes)
@@ -112,12 +111,11 @@ class GoogleApiClientTestCase(TestCase):
         Then GoogleApiClient#fetch_google_scores() logs the HttpError
         """
         http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
-        error = {
-            'code': 500,
-            'message': 'Backend Error'
-        }
-        error_bytes = b'{"error" : { "code" : 500, "message" : "backendError" } }'
-        response = Response({'status': 500, 'reason': 'backendError', 'error': error})
+        error_bytes = b'{"error" : { ' \
+                      b'"code" : 500, ' \
+                      b'"message" : "Backend Error", ' \
+                      b'"errors" : [{ "reason" : "backendError" }] } }'
+        response = Response({'status': 500})
         request_builder = RequestMockBuilder(
             {
                 'trends.getTimelinesForHealth': (response, error_bytes)
@@ -139,7 +137,7 @@ class GoogleApiClientTestCase(TestCase):
             end = start + timedelta(days=1)
             with self.assertLogs(level='WARNING') as logContext:
                 instance.fetch_google_scores(terms, start, end)
-            self.assertListEqual(logContext.output, ['WARNING:root:<HttpError 500 "backendError">'])
+            self.assertListEqual(logContext.output, ['WARNING:root:<HttpError 500 "Backend Error">'])
 
     def test_http_error(self):
         """
@@ -152,12 +150,11 @@ class GoogleApiClientTestCase(TestCase):
         Then GoogleApiClient#fetch_google_scores() logs the HttpError
         """
         http = HttpMock(datafile('trends_discovery.json'), {'status': '200'})
-        error = {
-            'code': 400,
-            'message': 'badRequest'
-        }
-        error_bytes = b'{"error" : { "code" : 400, "message" : "badRequest" } }'
-        response = Response({'status': 400, 'reason': 'badRequest', 'error': error})
+        error_bytes = b'{"error" : { ' \
+                      b'"code" : 400, ' \
+                      b'"message" : "Bad Request", ' \
+                      b'"errors" : [{ "reason" : "badRequest" }] } }'
+        response = Response({'status': 400})
         request_builder = RequestMockBuilder(
             {
                 'trends.getTimelinesForHealth': (response, error_bytes)
@@ -179,7 +176,7 @@ class GoogleApiClientTestCase(TestCase):
             end = start + timedelta(days=1)
             with self.assertLogs(level='WARNING') as logContext:
                 instance.fetch_google_scores(terms, start, end)
-            self.assertListEqual(logContext.output, ['WARNING:root:<HttpError 400 "badRequest">'])
+            self.assertListEqual(logContext.output, ['WARNING:root:<HttpError 400 "Bad Request">'])
 
     def test_blocked_until(self):
         """
