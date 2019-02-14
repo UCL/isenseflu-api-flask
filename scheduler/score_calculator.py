@@ -4,7 +4,7 @@
 
 from datetime import date, timedelta
 from flask_api import FlaskAPI
-from logging import INFO, log, basicConfig
+from logging import ERROR, INFO, log, basicConfig
 from os import getenv
 from typing import List
 
@@ -32,6 +32,9 @@ def run(model_id: int, start: date, end: date):
         api_client = GoogleApiClient()
         for terms, start_date, end_date in batch:
             batch_scores = api_client.fetch_google_scores(terms, start_date, end_date)
+            if not batch_scores:
+                log(ERROR, 'Retrieval of Google scores failed')
+                return
             set_google_scores(batch_scores)
         set_and_verify_google_dates(model_id, missing_google_list)  # Raise an error if missing data
     else:

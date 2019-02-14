@@ -7,8 +7,9 @@ from unittest import TestCase
 from unittest.mock import patch, DEFAULT, Mock
 
 from app import create_app, DB
-from app.models import GoogleDate, ModelFunction, ModelScore
+from app.models import FluModelGoogleTerm, GoogleDate, GoogleTerm, ModelFunction, ModelScore
 from scheduler import score_calculator
+from scheduler.google_api_client import GoogleApiClient
 
 
 class ScoreCalculatorTestCase(TestCase):
@@ -51,6 +52,36 @@ class ScoreCalculatorTestCase(TestCase):
                 score_calculator.run(1, date(2018, 1, 1), date(2018, 1, 2))
                 result_after = ModelScore.query.filter_by(flu_model_id=1).all()
                 self.assertEqual(len(result_after), 2)
+
+    def test_failed_retrieval_of_google_scores(self):
+        """
+        Scenario: Test run function to attempt calculating model score for a specific date
+        Given the requested Google date is missing
+        And the requested data is not available on Google API
+        Then run function returns without calculating the score
+        And an error log message is printed
+        """
+        with self.app.app_context():
+            google_date_1 = GoogleDate(1, date.today() - timedelta(days=1))
+            google_date_1.save()
+            google_term = GoogleTerm()
+            google_term.id = 1
+            google_term.term = 'Term 1'
+            google_term.save()
+            flu_model_google_term = FluModelGoogleTerm()
+            flu_model_google_term.flu_model_id = 1
+            flu_model_google_term.google_term_id = 1
+            flu_model_google_term.save()
+            model_function = ModelFunction()
+            model_function.flu_model_id = 1
+            model_function.function_name = 'matlab_function'
+            model_function.average_window_size = 1
+            model_function.has_confidence_interval = False
+            model_function.save()
+            with patch.object(GoogleApiClient, 'fetch_google_scores', lambda s, x, y, z: []):
+                with self.assertLogs(level='ERROR') as logContext:
+                    score_calculator.run(1, date.today(), date.today())
+                self.assertListEqual(logContext.output, ['ERROR:root:Retrieval of Google scores failed'])
 
     def test_runsched(self):
         """
