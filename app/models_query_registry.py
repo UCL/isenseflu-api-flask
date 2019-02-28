@@ -43,8 +43,35 @@ def get_flu_model_for_model_region_and_dates(
         start_date: date,
         end_date: date
 ) -> Tuple[Dict, List[ModelScore]]:
-    """ Returns model data for the period start_date to end_date """
+    """ Returns model data for the period start_date to end_date and corresponding model_region_id """
     flu_model = FluModel.query.filter_by(is_public=True, is_displayed=True, model_region_id=model_region_id).first()
+    if not flu_model:
+        return None, None
+    model_scores = ModelScore.query.filter(
+        ModelScore.flu_model_id == flu_model.id,
+        ModelScore.score_date >= start_date,
+        ModelScore.score_date <= end_date
+    ).order_by(ModelScore.score_date.desc()).all()
+    if not model_scores:
+        return None, None
+    scores = [s.score_value for s in model_scores]
+    flu_model_meta = {
+        'id': flu_model.id,
+        'name': flu_model.name,
+        'average_score': sum(scores) / float(len(scores)),
+        'start_date': model_scores[-1].score_date,
+        'end_date': model_scores[0].score_date
+    }
+    return flu_model_meta, model_scores
+
+
+def get_flu_model_for_model_id_and_dates(
+        model_id: int,
+        start_date: date,
+        end_date: date
+) -> Tuple[Dict, List[ModelScore]]:
+    """ Returns model data for the period start_date to end_date and corresponding model_id """
+    flu_model = FluModel.query.filter_by(is_public=True, is_displayed=True, id=model_id).first()
     if not flu_model:
         return None, None
     model_scores = ModelScore.query.filter(

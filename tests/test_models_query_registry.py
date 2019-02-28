@@ -12,7 +12,8 @@ from app.models_query_registry import get_existing_google_dates, get_google_term
     set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score, \
     get_model_function, get_google_terms_and_scores, get_google_terms_and_averages, \
     get_flu_model_for_id, get_public_flu_models, get_default_flu_model, get_default_flu_model_30days, \
-    get_rate_thresholds, get_flu_models_for_ids, get_all_flu_models, get_flu_model_for_model_region_and_dates
+    get_rate_thresholds, get_flu_models_for_ids, get_all_flu_models, get_flu_model_for_model_region_and_dates, \
+    get_flu_model_for_model_id_and_dates
 
 
 class ModelsTestCase(TestCase):
@@ -385,7 +386,7 @@ class ModelsTestCase(TestCase):
 
     def test_get_flu_model_for_model_region_and_dates(self):
         """
-        Scenario: Get the last 30 days of data of the default flu model
+        Scenario: Get model data and scores for model_region_id and dates
         """
         with self.app.app_context():
             flu_model = FluModel()
@@ -405,6 +406,34 @@ class ModelsTestCase(TestCase):
                 model_score.region = 'e'
                 model_score.save()
             result = get_flu_model_for_model_region_and_dates('7-e', date(2018, 1, 2), date(2018, 1, 31))
+            self.assertEqual(result[0]['average_score'], 0.5723146873461765)
+            self.assertEqual(result[0]['start_date'], date(2018, 1, 2))
+            self.assertEqual(result[0]['end_date'], date(2018, 1, 31))
+            self.assertEqual(result[0]['name'], 'Model 1')
+            self.assertEqual(result[0]['id'], 1)
+            self.assertEqual(len(result[1]), 30)
+
+    def test_get_flu_model_for_model_id_and_dates(self):
+        """
+        Scenario: Get model data and scores for model_id and dates
+        """
+        with self.app.app_context():
+            flu_model = FluModel()
+            flu_model.id = 1
+            flu_model.is_displayed = True
+            flu_model.is_public = True
+            flu_model.calculation_parameters = ''
+            flu_model.name = 'Model 1'
+            flu_model.source_type = 'google'
+            flu_model.save()
+            for i in range(1, 32):
+                model_score = ModelScore()
+                model_score.flu_model_id = 1
+                model_score.score_date = date(2018, 1, i)
+                model_score.score_value = i / (10 + i)
+                model_score.region = 'e'
+                model_score.save()
+            result = get_flu_model_for_model_id_and_dates(1, date(2018, 1, 2), date(2018, 1, 31))
             self.assertEqual(result[0]['average_score'], 0.5723146873461765)
             self.assertEqual(result[0]['start_date'], date(2018, 1, 2))
             self.assertEqual(result[0]['end_date'], date(2018, 1, 31))
