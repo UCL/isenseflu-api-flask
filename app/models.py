@@ -20,6 +20,7 @@ class FluModel(DB.Model):
     is_public = DB.Column(DB.Boolean, nullable=False)
     is_displayed = DB.Column(DB.Boolean, nullable=False)
     calculation_parameters = DB.Column(DB.Text, nullable=True)
+    model_region_id = DB.Column(DB.Text, nullable=True)
     model_scores = DB.relationship('ModelScore')
     model_function = DB.relationship('ModelFunction')
 

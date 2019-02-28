@@ -74,6 +74,125 @@ class InitRoutesTestCase(TestCase):
         self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
 
+    def test_get_root_model_region(self):
+        flumodel = FluModel()
+        flumodel.name = 'Test Model'
+        flumodel.is_public = True
+        flumodel.is_displayed = True
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
+        flumodel.model_region_id = '7-e'
+        dates = [date(2018, 6, d) for d in range(1, 30)]
+        datapoints = []
+        for d in dates:
+            entry = ModelScore()
+            entry.region = 'e'
+            entry.score_date = d
+            entry.calculation_timestamp = datetime.now()
+            entry.score_value = 1.23
+            entry.confidence_interval_lower = 0.81
+            entry.confidence_interval_upper = 1.65
+            datapoints.append(entry)
+        flumodel.model_scores = datapoints
+        model_function = ModelFunction()
+        model_function.id = 1
+        model_function.function_name = 'matlab_model'
+        model_function.average_window_size = 1
+        model_function.flu_model_id = 1
+        model_function.has_confidence_interval = True
+        default_model = DefaultFluModel()
+        default_model.flu_model_id = 1
+        with self.app.app_context():
+            flumodel.save()
+            model_function.save()
+            DB.session.add(default_model)
+            DB.session.commit()
+        response = self.client().get('/?model_regions-0=7-e&start=2018-06-29&end=2018-06-29')
+        result = response.get_json()
+        expected = {
+            'id': 1,
+            'name': 'Test Model',
+            'hasConfidenceInterval': True,
+            'parameters': {
+                'georegion': 'e',
+                'smoothing': 1
+            },
+            'model_list': [{'id': 1, 'name': 'Test Model'}],
+            'start_date': '2018-06-29',
+            'end_date': '2018-06-29',
+            'average_score': 1.23,
+            'rate_thresholds': {},
+            'datapoints': [
+                {
+                    'score_date': '2018-06-29',
+                    'score_value': 1.23,
+                    'confidence_interval_lower': 0.81,
+                    'confidence_interval_upper': 1.65
+                }
+            ]
+        }
+        self.assertEqual(result, expected)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_root_model_id(self):
+        flumodel = FluModel()
+        flumodel.name = 'Test Model'
+        flumodel.is_public = True
+        flumodel.is_displayed = True
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
+        dates = [date(2018, 6, d) for d in range(1, 30)]
+        datapoints = []
+        for d in dates:
+            entry = ModelScore()
+            entry.region = 'e'
+            entry.score_date = d
+            entry.calculation_timestamp = datetime.now()
+            entry.score_value = 1.23
+            entry.confidence_interval_lower = 0.81
+            entry.confidence_interval_upper = 1.65
+            datapoints.append(entry)
+        flumodel.model_scores = datapoints
+        model_function = ModelFunction()
+        model_function.id = 1
+        model_function.function_name = 'matlab_model'
+        model_function.average_window_size = 1
+        model_function.flu_model_id = 1
+        model_function.has_confidence_interval = True
+        default_model = DefaultFluModel()
+        default_model.flu_model_id = 1
+        with self.app.app_context():
+            flumodel.save()
+            model_function.save()
+            DB.session.add(default_model)
+            DB.session.commit()
+        response = self.client().get('/?id=1&start=2018-06-29&end=2018-06-29')
+        result = response.get_json()
+        expected = {
+            'id': 1,
+            'name': 'Test Model',
+            'hasConfidenceInterval': True,
+            'parameters': {
+                'georegion': 'e',
+                'smoothing': 1
+            },
+            'model_list': [{'id': 1, 'name': 'Test Model'}],
+            'start_date': '2018-06-29',
+            'end_date': '2018-06-29',
+            'average_score': 1.23,
+            'rate_thresholds': {},
+            'datapoints': [
+                {
+                    'score_date': '2018-06-29',
+                    'score_value': 1.23,
+                    'confidence_interval_lower': 0.81,
+                    'confidence_interval_upper': 1.65
+                }
+            ]
+        }
+        self.assertEqual(result, expected)
+        self.assertEqual(response.status_code, 200)
+
     def test_get_models(self):
         flumodel = FluModel()
         flumodel.name = 'Test Model'
