@@ -22,7 +22,8 @@ def create_app(config_name):
 
     from app.models_query_registry import get_flu_model_for_id, get_public_flu_models, \
         get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days, \
-        get_rate_thresholds, get_flu_models_for_ids, has_valid_token, set_model_display, get_all_flu_models
+        get_rate_thresholds, get_flu_models_for_ids, has_valid_token, set_model_display, get_all_flu_models, \
+        get_flu_model_for_model_region_and_dates, get_flu_model_for_model_id_and_dates
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -32,7 +33,26 @@ def create_app(config_name):
     @app.route('/', methods=['GET'])
     def root_route():
         """ Default route (/). Returns the last 30 days of model scores for the default flu model """
-        model_data, model_scores = get_default_flu_model_30days()
+        model_data, model_scores = None, None
+        if not request.args:
+            model_data, model_scores = get_default_flu_model_30days()
+        else:
+            start_date = str(request.args.get('start'))
+            end_date = str(request.args.get('end'))
+            if not start_date or not end_date:
+                return '', status.HTTP_400_BAD_REQUEST
+            if 'id' in request.args:
+                model_data, model_scores = get_flu_model_for_model_id_and_dates(
+                    int(request.args.get('id')),
+                    datetime.strptime(start_date, '%Y-%m-%d').date(),
+                    datetime.strptime(end_date, '%Y-%m-%d').date()
+                )
+            elif 'model_regions-0' in request.args:
+                model_data, model_scores = get_flu_model_for_model_region_and_dates(
+                    str(request.args.get('model_regions-0')),
+                    datetime.strptime(start_date, '%Y-%m-%d').date(),
+                    datetime.strptime(end_date, '%Y-%m-%d').date()
+                )
         flu_models = get_public_flu_models()
         if not model_data or not flu_models:
             return '', status.HTTP_204_NO_CONTENT
