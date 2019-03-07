@@ -57,7 +57,7 @@ def run(model_id: int, start: date, end: date):
                 missing_model_date
             )
             msg_date = missing_model_date
-        if getenv('TWITTER_ENABLED'):
+        if getenv('TWITTER_ENABLED') and int(getenv('TWITTER_MODEL_ID')) == model_id:
             mq_client = build_message_client()
             mq_client.publish_model_score(msg_date, msg_score)
             log(INFO, 'Latest ModelScore value sent to message queue')

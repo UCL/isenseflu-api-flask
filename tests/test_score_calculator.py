@@ -3,6 +3,7 @@
 """
 
 from datetime import date, timedelta
+from os import environ
 from unittest import TestCase
 from unittest.mock import patch, DEFAULT, Mock
 
@@ -82,6 +83,37 @@ class ScoreCalculatorTestCase(TestCase):
                 with self.assertLogs(level='ERROR') as logContext:
                     score_calculator.run(1, date.today(), date.today())
                 self.assertListEqual(logContext.output, ['ERROR:root:Retrieval of Google scores failed'])
+
+    def test_twitter_enabled(self):
+        """
+        Scenario: Test run function behaviour when the environment variable TWITTER_ENABLED is present
+        """
+        with self.app.app_context():
+            google_date = GoogleDate(1, date.today() - timedelta(days=1))
+            google_date.save()
+            model_function = ModelFunction()
+            model_function.flu_model_id = 1
+            model_function.function_name = 'matlab_function'
+            model_function.average_window_size = 1
+            model_function.has_confidence_interval = False
+            model_function.save()
+            with patch.multiple(
+                    'scheduler.score_calculator', build_calculator=DEFAULT, build_message_client=DEFAULT
+            ) as mock_dict:
+                matlab_client = mock_dict['build_calculator'].return_value = Mock()
+                matlab_client.calculate_model_score.return_value = 1.0
+                message_client = mock_dict['build_message_client'].return_value = Mock()
+                message_client.publish_model_score.return_value = None
+                environ['TWITTER_ENABLED'] = 'True'
+                environ['TWITTER_MODEL_ID'] = '1'
+                with self.assertLogs(level='INFO') as logContext:
+                    score_calculator.run(1, google_date.score_date, google_date.score_date)
+                self.assertListEqual(logContext.output, [
+                    'INFO:root:Google scores have already been collected for this time period',
+                    'INFO:root:Latest ModelScore value sent to message queue'
+                ])
+                result_after = ModelScore.query.filter_by(flu_model_id=1).all()
+                self.assertEqual(len(result_after), 1)
 
     def test_runsched(self):
         """
