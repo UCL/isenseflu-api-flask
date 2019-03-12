@@ -70,5 +70,5 @@ def runsched(model_id_list: List[int], app: FlaskAPI):
     with app.app_context():
         for model_id in model_id_list:
             start = get_last_score_date(model_id) + timedelta(days=1)
-            end = date.today() - timedelta(days=2)
+            end = date.today() - timedelta(days=4)
             run(model_id, start, end)

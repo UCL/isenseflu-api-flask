@@ -36,3 +36,5 @@ class MessageClientTestCase(TestCase):
             instance.client.send = Mock()
             instance.publish_model_score(date(2018, 1, 1), 1.0)
             self.assertEqual(instance.client.send.call_count, 1)
+            self.assertEqual(instance.client.send.call_args[0], ('/queue/PubTest.Q',))
+            self.assertEqual(instance.client.send.call_args[1]['body'], b'date=2018-01-01\nvalue=1.0')

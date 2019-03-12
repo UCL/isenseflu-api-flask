@@ -118,20 +118,20 @@ class ScoreCalculatorTestCase(TestCase):
     def test_runsched(self):
         """
         Scenario: Test runsched function to calculate model scores
-        Given a last score_date of date.today() - timedelta(days=4)
-        Then score_calculator.run is called with a start date of date.today() - timedelta(days=3)
-        And end date of date.today() - timedelta(days=2)
+        Given a last score_date of date.today() - timedelta(days=5)
+        Then score_calculator.run is called with a start date of date.today() - timedelta(days=4)
+        And end date of date.today() - timedelta(days=4)
         """
         with self.app.app_context():
             model_score = ModelScore()
             model_score.flu_model_id = 1
-            model_score.score_date = date.today() - timedelta(days=4)
+            model_score.score_date = date.today() - timedelta(days=5)
             model_score.score_value = 0.5
             model_score.region = 'e'
             model_score.save()
         with patch('scheduler.score_calculator.run') as patched_run:
             score_calculator.runsched([1], self.app)
-            patched_run.assert_called_with(1, date.today() - timedelta(days=3), date.today() - timedelta(days=2))
+            patched_run.assert_called_with(1, date.today() - timedelta(days=4), date.today() - timedelta(days=4))
 
     def tearDown(self):
         DB.drop_all(app=self.app)
