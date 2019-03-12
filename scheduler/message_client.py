@@ -32,7 +32,7 @@ class MessageClient:
         Publishes the score date and value on the message queue
         """
         self.client.connect(headers={'passcode': _MQ_PASS, 'login': _MQ_USER})
-        message = 'date={0}\nvalue={1}'.format(score_date, str(score_value))
+        message = 'date={0}\nvalue={1}'.format(score_date, str(score_value)).encode()
         self.client.send(_MQ_DEST, body=message)
         self.client.disconnect()
 
