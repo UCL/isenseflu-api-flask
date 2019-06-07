@@ -110,6 +110,10 @@ def create_app(config_name):
             results.append(obj)
         return results, status.HTTP_200_OK
 
+    @app.route('/plink', methods=['GET'])
+    def permalink_route():
+        """ Returns the scores and metadata for one or more models in a specific time window """
+
     @app.route('/scores', methods=['GET'])
     def scores_route():
         """ Returns a list of model scores for a model id, start and end date """
@@ -176,6 +180,10 @@ def create_app(config_name):
             }
             return result, status.HTTP_200_OK
         return '', status.HTTP_204_NO_CONTENT
+
+    @app.route('/twlink', methods=['GET'])
+    def twitterlink_route():
+        """ Returns the scores and metadata for a model linked from Twitter """
 
     @app.route('/csv', methods=['GET'])
     def csv_route():
