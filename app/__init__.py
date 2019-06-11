@@ -24,6 +24,7 @@ def create_app(config_name):
         get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days, \
         get_rate_thresholds, get_flu_models_for_ids, has_valid_token, set_model_display, get_all_flu_models, \
         get_flu_model_for_model_region_and_dates, get_flu_model_for_model_id_and_dates
+    from app.response_template_registry import build_models_and_metadata
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -184,6 +185,21 @@ def create_app(config_name):
     @app.route('/twlink', methods=['GET'])
     def twitterlink_route():
         """ Returns the scores and metadata for a model linked from Twitter """
+        if not all(e in request.args for e in ['model_regions-0', 'start', 'end']):
+            return '', status.HTTP_400_BAD_REQUEST
+        model_data, model_scores = get_flu_model_for_model_region_and_dates(
+            str(request.args.get('model_regions-0')),
+            datetime.strptime(request.args.get('start'), '%Y-%m-%d').date(),
+            datetime.strptime(request.args.get('end'), '%Y-%m-%d').date()
+        )
+        response = build_models_and_metadata(
+            model_list=get_public_flu_models(),
+            rate_thresholds=get_rate_thresholds(model_data['start_date']),
+            model_data=[(model_data, model_scores)]
+        )
+        if response:
+            return response, status.HTTP_200_OK
+        return '', status.HTTP_204_NO_CONTENT
 
     @app.route('/csv', methods=['GET'])
     def csv_route():
