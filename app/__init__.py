@@ -114,6 +114,30 @@ def create_app(config_name):
     @app.route('/plink', methods=['GET'])
     def permalink_route():
         """ Returns the scores and metadata for one or more models in a specific time window """
+        if not all(e in request.args for e in ['id', 'startDate', 'endDate']):
+            return '', status.HTTP_400_BAD_REQUEST
+        resolution = str(request.args.get('resolution', 'day'))
+        if resolution not in ['day', 'week']:
+            return '', status.HTTP_400_BAD_REQUEST
+        model_data = []
+        start_dates = []
+        for id in request.args.getlist('id'):
+            mod_data, mod_scores = get_flu_model_for_model_id_and_dates(
+                id,
+                datetime.strptime(request.args.get('startDate'), '%Y-%m-%d').date(),
+                datetime.strptime(request.args.get('endDate'), '%Y-%m-%d').date()
+            )
+            model_data.append((mod_data, mod_scores))
+            start_dates.append(mod_data['start_date'])
+        smoothing = int(request.args.get('smoothing', 0))
+        response = build_models_and_metadata(
+            model_list=get_public_flu_models(),
+            rate_thresholds=get_rate_thresholds(min(start_dates)),
+            model_data=model_data
+        )
+        if response:
+            return response, status.HTTP_200_OK
+        return '', status.HTTP_204_NO_CONTENT
 
     @app.route('/scores', methods=['GET'])
     def scores_route():
