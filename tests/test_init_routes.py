@@ -484,7 +484,14 @@ class InitRoutesTestCase(TestCase):
             DB.session.commit()
         response = self.client().get('/twlink?model_regions-0=1-e&start=2018-06-01&end=2018-06-10')
         self.assertListEqual(response.get_json()['model_list'], [{'id': 1, 'name': 'Test Model'}])
-        # print(response.get_json()['rate_thresholds'])
+        self.assertEqual(len(response.get_json()['model_data'][0]['data_points']), 10)
+        expected = {
+            'low_value': {'label': 'Low epidemic rate', 'value': 0.1},
+            'medium_value': {'label': 'Medium epidemic rate', 'value': 0.2},
+            'high_value': {'label': 'High epidemic rate', 'value': 0.3},
+            'very_high_value': {'label': 'Very high epidemic rate', 'value': 0.4}
+        }
+        self.assertDictEqual(response.get_json()['rate_thresholds'], expected)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
