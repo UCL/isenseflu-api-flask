@@ -119,6 +119,7 @@ def create_app(config_name):
         resolution = str(request.args.get('resolution', 'day'))
         if resolution not in ['day', 'week']:
             return '', status.HTTP_400_BAD_REQUEST
+        smoothing = int(request.args.get('smoothing', 0))
         model_data = []
         start_dates = []
         for id in request.args.getlist('id'):
@@ -127,9 +128,10 @@ def create_app(config_name):
                 datetime.strptime(request.args.get('startDate'), '%Y-%m-%d').date(),
                 datetime.strptime(request.args.get('endDate'), '%Y-%m-%d').date()
             )
+            if resolution == 'week':
+                mod_scores = [s for s in mod_scores if s.score_date.weekday() == 6]
             model_data.append((mod_data, mod_scores))
             start_dates.append(mod_data['start_date'])
-        smoothing = int(request.args.get('smoothing', 0))
         response = build_models_and_metadata(
             model_list=get_public_flu_models(),
             rate_thresholds=get_rate_thresholds(min(start_dates)),
