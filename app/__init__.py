@@ -2,6 +2,7 @@
 Flask app entry point
 """
 
+from copy import copy
 from datetime import date, timedelta, datetime
 from numbers import Number
 from flask import request
@@ -130,6 +131,13 @@ def create_app(config_name):
             )
             if resolution == 'week':
                 mod_scores = [s for s in mod_scores if s.score_date.weekday() == 6]
+            if smoothing != 0:
+                smooth_scores = []
+                for m in mod_scores:
+                    c = copy(m)
+                    c.score_value, c.confidence_interval_upper, c.confidence_interval_lower = m.moving_avg(smoothing)
+                    smooth_scores.append(c)
+                mod_scores = smooth_scores
             model_data.append((mod_data, mod_scores))
             start_dates.append(mod_data['start_date'])
         response = build_models_and_metadata(
