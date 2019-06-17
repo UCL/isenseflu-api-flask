@@ -32,8 +32,6 @@ class ResponsesTestCase(TestCase):
         model_data = [{
             'id': 1,
             'name': 'Test Model',
-            'has_confidence_interval': True,
-            'display_model': True,
             'start_date': '2019-01-01',
             'end_date': '2019-01-02',
             'average_score': 0.3,
@@ -57,8 +55,6 @@ class ResponsesTestCase(TestCase):
             {
                 'id': 1,
                 'name': 'Test Model',
-                'has_confidence_interval': True,
-                'display_model': True,
                 'start_date': date(2019, 1, 1),
                 'end_date': date(2019, 1, 2),
                 'average_score': 0.3
