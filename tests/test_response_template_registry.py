@@ -59,8 +59,8 @@ class ResponsesTestCase(TestCase):
                 'name': 'Test Model',
                 'has_confidence_interval': True,
                 'display_model': True,
-                'start_date': '2019-01-01',
-                'end_date': '2019-01-02',
+                'start_date': date(2019, 1, 1),
+                'end_date': date(2019, 1, 2),
                 'average_score': 0.3
             },
             [flu_model_score_1, flu_model_score_2]

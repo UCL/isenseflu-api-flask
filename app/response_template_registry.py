@@ -37,6 +37,8 @@ def build_models_and_metadata(
             } for s in model_scores_item
         ]
         model_data_item['data_points'] = converted_model_scores
+        model_data_item['start_date'] = model_data_item['start_date'].strftime('%Y-%m-%d')
+        model_data_item['end_date'] = model_data_item['end_date'].strftime('%Y-%m-%d')
         flu_model_data.append(model_data_item)
     response = {
         'model_list': flu_model_list,
