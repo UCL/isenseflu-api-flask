@@ -59,6 +59,7 @@ class InitRoutesTestCase(TestCase):
                     'average_score': 1.23,
                     'start_date': '2018-06-29',
                     'end_date': '2018-06-29',
+                    'has_confidence_interval': True,
                     'data_points': [
                         {
                             'score_date': '2018-06-29',

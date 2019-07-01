@@ -327,6 +327,12 @@ class ModelsTestCase(TestCase):
             flu_model.save()
             default_model = DefaultFluModel()
             default_model.flu_model_id = 1
+            model_function = ModelFunction()
+            model_function.flu_model_id = 1
+            model_function.has_confidence_interval = True
+            model_function.function_name = 'Function name'
+            model_function.average_window_size = 7
+            model_function.save()
             DB.session.add(default_model)
             DB.session.commit()
             for i in range(1, 32):

@@ -32,6 +32,7 @@ def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
         'id': default_flu_model.id,
         'name': default_flu_model.name,
         'average_score': sum(scores) / float(len(scores)),
+        'has_confidence_interval': get_model_function(default_flu_model.id).has_confidence_interval,
         'start_date': model_scores[-1].score_date,
         'end_date': model_scores[0].score_date
     }
