@@ -2,6 +2,7 @@
 Flask app entry point
 """
 
+from copy import copy
 from datetime import date, timedelta, datetime
 from numbers import Number
 from flask import request
@@ -24,6 +25,7 @@ def create_app(config_name):
         get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days, \
         get_rate_thresholds, get_flu_models_for_ids, has_valid_token, set_model_display, get_all_flu_models, \
         get_flu_model_for_model_region_and_dates, get_flu_model_for_model_id_and_dates
+    from app.response_template_registry import build_models_and_metadata
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -33,67 +35,18 @@ def create_app(config_name):
     @app.route('/', methods=['GET'])
     def root_route():
         """ Default route (/). Returns the last 30 days of model scores for the default flu model """
-        model_data, model_scores = None, None
-        if not request.args:
-            model_data, model_scores = get_default_flu_model_30days()
-        else:
-            start_date = str(request.args.get('start'))
-            end_date = str(request.args.get('end'))
-            if not start_date or not end_date:
-                return '', status.HTTP_400_BAD_REQUEST
-            if 'id' in request.args:
-                model_data, model_scores = get_flu_model_for_model_id_and_dates(
-                    int(request.args.get('id')),
-                    datetime.strptime(start_date, '%Y-%m-%d').date(),
-                    datetime.strptime(end_date, '%Y-%m-%d').date()
-                )
-            elif 'model_regions-0' in request.args:
-                model_data, model_scores = get_flu_model_for_model_region_and_dates(
-                    str(request.args.get('model_regions-0')),
-                    datetime.strptime(start_date, '%Y-%m-%d').date(),
-                    datetime.strptime(end_date, '%Y-%m-%d').date()
-                )
+        model_data, model_scores = get_default_flu_model_30days()
         flu_models = get_public_flu_models()
         if not model_data or not flu_models:
             return '', status.HTTP_204_NO_CONTENT
-        model_parameters = get_model_function(model_data['id'])
-        datapoints = []
-        for score in model_scores:
-            child = {
-                'score_date': score.score_date.strftime('%Y-%m-%d'),
-                'score_value': score.score_value
-            }
-            if model_parameters.has_confidence_interval:
-                confidence_interval = {
-                    'confidence_interval_upper': score.confidence_interval_upper,
-                    'confidence_interval_lower': score.confidence_interval_lower
-                }
-                child.update(confidence_interval)
-            datapoints.append(child)
-        rate_thresholds = get_rate_thresholds(model_data['start_date'])
-        model_list = []
-        for flu_model in flu_models:
-            obj = {
-                'id': flu_model.id,
-                'name': flu_model.name
-            }
-            model_list.append(obj)
-        result = {
-            'id': model_data['id'],
-            'name': model_data['name'],
-            'hasConfidenceInterval': model_parameters.has_confidence_interval,
-            'parameters': {
-                'georegion': 'e',
-                'smoothing': model_parameters.average_window_size
-            },
-            'model_list': model_list,
-            'start_date': model_data['start_date'].strftime('%Y-%m-%d'),
-            'end_date': model_data['end_date'].strftime('%Y-%m-%d'),
-            'average_score': model_data['average_score'],
-            'rate_thresholds': rate_thresholds,
-            'datapoints': datapoints
-        }
-        return result, status.HTTP_200_OK
+        response = build_models_and_metadata(
+            model_list=flu_models,
+            rate_thresholds=get_rate_thresholds(model_data['start_date']),
+            model_data=[(model_data, model_scores)]
+        )
+        if response:
+            return response, status.HTTP_200_OK
+        return '', status.HTTP_204_NO_CONTENT
 
     @app.route('/models', methods=['GET'])
     def models_route():
@@ -109,6 +62,43 @@ def create_app(config_name):
             }
             results.append(obj)
         return results, status.HTTP_200_OK
+
+    @app.route('/plink', methods=['GET'])
+    def permalink_route():
+        """ Returns the scores and metadata for one or more models in a specific time window """
+        if not all(e in request.args for e in ['id', 'startDate', 'endDate']):
+            return '', status.HTTP_400_BAD_REQUEST
+        resolution = str(request.args.get('resolution', 'day'))
+        if resolution not in ['day', 'week']:
+            return '', status.HTTP_400_BAD_REQUEST
+        smoothing = int(request.args.get('smoothing', 0))
+        model_data = []
+        start_dates = []
+        for id in request.args.getlist('id'):
+            mod_data, mod_scores = get_flu_model_for_model_id_and_dates(
+                id,
+                datetime.strptime(request.args.get('startDate'), '%Y-%m-%d').date(),
+                datetime.strptime(request.args.get('endDate'), '%Y-%m-%d').date()
+            )
+            if resolution == 'week':
+                mod_scores = [s for s in mod_scores if s.score_date.weekday() == 6]
+            if smoothing != 0:
+                smooth_scores = []
+                for m in mod_scores:
+                    c = copy(m)
+                    c.score_value, c.confidence_interval_upper, c.confidence_interval_lower = m.moving_avg(smoothing)
+                    smooth_scores.append(c)
+                mod_scores = smooth_scores
+            model_data.append((mod_data, mod_scores))
+            start_dates.append(mod_data['start_date'])
+        response = build_models_and_metadata(
+            model_list=get_public_flu_models(),
+            rate_thresholds=get_rate_thresholds(min(start_dates)),
+            model_data=model_data
+        )
+        if response:
+            return response, status.HTTP_200_OK
+        return '', status.HTTP_204_NO_CONTENT
 
     @app.route('/scores', methods=['GET'])
     def scores_route():
@@ -175,6 +165,25 @@ def create_app(config_name):
                 'rate_thresholds': get_rate_thresholds(min(date_list))
             }
             return result, status.HTTP_200_OK
+        return '', status.HTTP_204_NO_CONTENT
+
+    @app.route('/twlink', methods=['GET'])
+    def twitterlink_route():
+        """ Returns the scores and metadata for a model linked from Twitter """
+        if not all(e in request.args for e in ['model_regions-0', 'start', 'end']):
+            return '', status.HTTP_400_BAD_REQUEST
+        model_data, model_scores = get_flu_model_for_model_region_and_dates(
+            str(request.args.get('model_regions-0')),
+            datetime.strptime(request.args.get('start'), '%Y-%m-%d').date(),
+            datetime.strptime(request.args.get('end'), '%Y-%m-%d').date()
+        )
+        response = build_models_and_metadata(
+            model_list=get_public_flu_models(),
+            rate_thresholds=get_rate_thresholds(model_data['start_date']),
+            model_data=[(model_data, model_scores)]
+        )
+        if response:
+            return response, status.HTTP_200_OK
         return '', status.HTTP_204_NO_CONTENT
 
     @app.route('/csv', methods=['GET'])

@@ -27,14 +27,7 @@ def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
         .all()
     if not model_scores:
         return None, None
-    scores = [s.score_value for s in model_scores]
-    flu_model_meta = {
-        'id': default_flu_model.id,
-        'name': default_flu_model.name,
-        'average_score': sum(scores) / float(len(scores)),
-        'start_date': model_scores[-1].score_date,
-        'end_date': model_scores[0].score_date
-    }
+    flu_model_meta = __build_flu_model_meta(default_flu_model, model_scores)
     return flu_model_meta, model_scores
 
 
@@ -54,14 +47,7 @@ def get_flu_model_for_model_region_and_dates(
     ).order_by(ModelScore.score_date.desc()).all()
     if not model_scores:
         return None, None
-    scores = [s.score_value for s in model_scores]
-    flu_model_meta = {
-        'id': flu_model.id,
-        'name': flu_model.name,
-        'average_score': sum(scores) / float(len(scores)),
-        'start_date': model_scores[-1].score_date,
-        'end_date': model_scores[0].score_date
-    }
+    flu_model_meta = __build_flu_model_meta(flu_model, model_scores)
     return flu_model_meta, model_scores
 
 
@@ -81,14 +67,7 @@ def get_flu_model_for_model_id_and_dates(
     ).order_by(ModelScore.score_date.desc()).all()
     if not model_scores:
         return None, None
-    scores = [s.score_value for s in model_scores]
-    flu_model_meta = {
-        'id': flu_model.id,
-        'name': flu_model.name,
-        'average_score': sum(scores) / float(len(scores)),
-        'start_date': model_scores[-1].score_date,
-        'end_date': model_scores[0].score_date
-    }
+    flu_model_meta = __build_flu_model_meta(flu_model, model_scores)
     return flu_model_meta, model_scores
 
 
@@ -301,3 +280,16 @@ def set_model_display(model_id: int, display: bool) -> bool:
     if rows == 1:
         return True
     return False
+
+
+def __build_flu_model_meta(flu_model: FluModel, model_scores: List[ModelScore]) -> Dict:
+    scores = [s.score_value for s in model_scores]
+    model_function = ModelFunction.query.filter_by(flu_model_id=flu_model.id).first()
+    return {
+        'id': flu_model.id,
+        'name': flu_model.name,
+        'average_score': sum(scores) / float(len(scores)),
+        'has_confidence_interval': model_function.has_confidence_interval,
+        'start_date': model_scores[-1].score_date,
+        'end_date': model_scores[0].score_date
+    }

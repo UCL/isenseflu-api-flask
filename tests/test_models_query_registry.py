@@ -327,6 +327,12 @@ class ModelsTestCase(TestCase):
             flu_model.save()
             default_model = DefaultFluModel()
             default_model.flu_model_id = 1
+            model_function = ModelFunction()
+            model_function.flu_model_id = 1
+            model_function.has_confidence_interval = True
+            model_function.function_name = 'Function name'
+            model_function.average_window_size = 7
+            model_function.save()
             DB.session.add(default_model)
             DB.session.commit()
             for i in range(1, 32):
@@ -398,6 +404,12 @@ class ModelsTestCase(TestCase):
             flu_model.source_type = 'google'
             flu_model.model_region_id = '7-e'
             flu_model.save()
+            model_function = ModelFunction()
+            model_function.flu_model_id = 1
+            model_function.has_confidence_interval = True
+            model_function.function_name = 'Function name'
+            model_function.average_window_size = 7
+            model_function.save()
             for i in range(1, 32):
                 model_score = ModelScore()
                 model_score.flu_model_id = 1
@@ -410,6 +422,7 @@ class ModelsTestCase(TestCase):
             self.assertEqual(result[0]['start_date'], date(2018, 1, 2))
             self.assertEqual(result[0]['end_date'], date(2018, 1, 31))
             self.assertEqual(result[0]['name'], 'Model 1')
+            self.assertEqual(result[0]['has_confidence_interval'], True)
             self.assertEqual(result[0]['id'], 1)
             self.assertEqual(len(result[1]), 30)
 
@@ -426,6 +439,12 @@ class ModelsTestCase(TestCase):
             flu_model.name = 'Model 1'
             flu_model.source_type = 'google'
             flu_model.save()
+            model_function = ModelFunction()
+            model_function.flu_model_id = 1
+            model_function.has_confidence_interval = True
+            model_function.function_name = 'Function name'
+            model_function.average_window_size = 7
+            model_function.save()
             for i in range(1, 32):
                 model_score = ModelScore()
                 model_score.flu_model_id = 1
@@ -438,6 +457,7 @@ class ModelsTestCase(TestCase):
             self.assertEqual(result[0]['start_date'], date(2018, 1, 2))
             self.assertEqual(result[0]['end_date'], date(2018, 1, 31))
             self.assertEqual(result[0]['name'], 'Model 1')
+            self.assertEqual(result[0]['has_confidence_interval'], True)
             self.assertEqual(result[0]['id'], 1)
             self.assertEqual(len(result[1]), 30)
 
