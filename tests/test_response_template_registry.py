@@ -35,6 +35,7 @@ class ResponsesTestCase(TestCase):
             'start_date': '2019-01-01',
             'end_date': '2019-01-02',
             'average_score': 0.3,
+            'has_confidence_interval': True,
             'data_points': data_points
         }]
         expected = {
@@ -57,6 +58,7 @@ class ResponsesTestCase(TestCase):
                 'name': 'Test Model',
                 'start_date': date(2019, 1, 1),
                 'end_date': date(2019, 1, 2),
+                'has_confidence_interval': True,
                 'average_score': 0.3
             },
             [flu_model_score_1, flu_model_score_2]
