@@ -120,31 +120,31 @@ class InitRoutesTestCase(TestCase):
         model_function.function_name = 'matlab_model'
         model_function.average_window_size = 1
         model_function.flu_model_id = 1
-        model_function.has_confidence_interval = True
+        model_function.has_confidence_interval = False
         with self.app.app_context():
             flumodel.save()
             model_function.save()
         response = self.client().get('/scores?id=1&startDate=2018-05-30&endDate=2018-06-30')
         result = response.get_json()
         expected = {
-            'modeldata': [
+            'model_data': [
                 {
                     'id': 1,
                     'name': 'Test Model',
                     'average_score': 1.23,
-                    'hasConfidenceInterval': True,
-                    'datapoints': [
+                    'has_confidence_interval': False,
+                    'start_date': '2018-06-20',
+                    'end_date': '2018-06-20',
+                    'data_points': [
                         {
                             'score_date': '2018-06-20',
-                            'score_value': 1.23
+                            'score_value': 1.23,
+                            'confidence_interval_lower': None,
+                            'confidence_interval_upper': None
                         }
                     ]
                 }
-            ],
-            'start_date': '2018-06-20',
-            'end_date': '2018-06-20',
-            'rate_thresholds': {},
-            'dates': ['2018-06-20']
+            ]
         }
         self.assertEqual(result, expected)
         self.assertEqual(response.status_code, 200)
@@ -179,7 +179,7 @@ class InitRoutesTestCase(TestCase):
             model_function.save()
         response = self.client().get('/scores?id=1&startDate=2018-05-30&endDate=2018-06-30&resolution=week')
         result = response.get_json()
-        self.assertEqual(len(result['modeldata'][0]['datapoints']), 4)
+        self.assertEqual(len(result['model_data'][0]['data_points']), 4)
 
     def test_get_scores_smoothing(self):
         flumodel = FluModel()
@@ -210,12 +210,11 @@ class InitRoutesTestCase(TestCase):
         response = self.client().get('/scores?id=1&startDate=2018-06-10&endDate=2018-06-10&smoothing=3')
         result = response.get_json()
         expected = {
-            'rate_thresholds': {},
-            'modeldata': [
+            'model_data': [
                 {
                     'id': 1,
                     'name': 'Test Model',
-                    'datapoints': [
+                    'data_points': [
                         {
                             'score_value': 2.0067340067340065,
                             'score_date': '2018-06-10',
@@ -223,13 +222,12 @@ class InitRoutesTestCase(TestCase):
                             'confidence_interval_upper': 0.0    # should be None
                         }
                     ],
-                    'hasConfidenceInterval': True,
+                    'has_confidence_interval': True,
+                    'start_date': '2018-06-10',
+                    'end_date': '2018-06-10',
                     'average_score': 2.0
                 }
-            ],
-            'start_date': '2018-06-10',
-            'end_date': '2018-06-10',
-            'dates': ['2018-06-10']
+            ]
         }
         self.assertEqual(result, expected)
 

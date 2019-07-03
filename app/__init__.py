@@ -25,7 +25,7 @@ def create_app(config_name):
         get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days, \
         get_rate_thresholds, get_flu_models_for_ids, has_valid_token, set_model_display, get_all_flu_models, \
         get_flu_model_for_model_region_and_dates, get_flu_model_for_model_id_and_dates
-    from app.response_template_registry import build_root_plink_twlink_response
+    from app.response_template_registry import build_root_plink_twlink_response, build_scores_response
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -103,7 +103,8 @@ def create_app(config_name):
     @app.route('/scores', methods=['GET'])
     def scores_route():
         """ Returns a list of model scores for a model id, start and end date """
-        ids = request.args.getlist('id')
+        if not request.args.getlist('id'):
+            return '', status.HTTP_400_BAD_REQUEST
         def_end_date = date.today() - timedelta(days=2)
         end_date = str(request.args.get('endDate', def_end_date.strftime('%Y-%m-%d')))
         def_start_date = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=30)
@@ -114,57 +115,28 @@ def create_app(config_name):
             return '', status.HTTP_400_BAD_REQUEST
         if resolution not in ['day', 'week']:
             return '', status.HTTP_400_BAD_REQUEST
-        flu_models = get_flu_models_for_ids(ids)
-        if flu_models is not None and len(flu_models) > 0:
-            model_list = []
-            date_list = []
-            for model in flu_models:
-                model_scores = get_model_scores_for_dates(
-                    model.id,
-                    datetime.strptime(start_date, '%Y-%m-%d').date(),
-                    datetime.strptime(end_date, '%Y-%m-%d').date()
-                )
-                if model_scores is None:
-                    return '', status.HTTP_204_NO_CONTENT
-                model_datapoints = []
-                if resolution == 'week':
-                    model_scores = [s for s in model_scores if s.score_date.weekday() == 6]
-                for ms in model_scores:
-                    if smoothing == 0:
-                        score_value = ms.score_value
-                        upper_conf = ms.confidence_interval_upper
-                        lower_conf = ms.confidence_interval_lower
-                    else:
-                        score_value, upper_conf, lower_conf = ms.moving_avg(smoothing)
-                    child = {
-                        'score_date': ms.score_date.strftime('%Y-%m-%d'),
-                        'score_value': score_value
-                    }
-                    if isinstance(upper_conf, Number) and isinstance(lower_conf, Number):
-                        confidence_interval = {
-                            'confidence_interval_upper': upper_conf,
-                            'confidence_interval_lower': lower_conf
-                        }
-                        child.update(confidence_interval)
-                    model_datapoints.append(child)
-                model_parameters = get_model_function(model.id)
-                model_obj = {
-                    'id': model.id,
-                    'name': model.name,
-                    'hasConfidenceInterval': model_parameters.has_confidence_interval,
-                    'average_score': sum([s.score_value for s in model_scores]) / float(len(model_scores)),
-                    'datapoints': model_datapoints
-                }
-                model_list.append(model_obj)
-                date_list += [d.score_date.strftime('%Y-%m-%d') for d in model_scores if d.score_date not in date_list]
-            result = {
-                'modeldata': model_list,
-                'dates': date_list,
-                'start_date': min(date_list),
-                'end_date': max(date_list),
-                'rate_thresholds': get_rate_thresholds(min(date_list))
-            }
-            return result, status.HTTP_200_OK
+        model_data = []
+        for id in request.args.getlist('id'):
+            mod_data, mod_scores = get_flu_model_for_model_id_and_dates(
+                id,
+                datetime.strptime(start_date, '%Y-%m-%d').date(),
+                datetime.strptime(end_date, '%Y-%m-%d').date()
+            )
+            if not mod_data or not mod_scores:
+                return '', status.HTTP_204_NO_CONTENT
+            if resolution == 'week':
+                mod_scores = [s for s in mod_scores if s.score_date.weekday() == 6]
+            if smoothing != 0:
+                smooth_scores = []
+                for m in mod_scores:
+                    c = copy(m)
+                    c.score_value, c.confidence_interval_upper, c.confidence_interval_lower = m.moving_avg(smoothing)
+                    smooth_scores.append(c)
+                mod_scores = smooth_scores
+            model_data.append((mod_data, mod_scores))
+        response = build_scores_response(model_data=model_data)
+        if response:
+            return response, status.HTTP_200_OK
         return '', status.HTTP_204_NO_CONTENT
 
     @app.route('/twlink', methods=['GET'])
