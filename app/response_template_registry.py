@@ -26,6 +26,32 @@ def build_models_and_metadata(
             'name': flu_model.name
         }
         flu_model_list.append(obj)
+    response = {
+        'model_list': flu_model_list,
+        'rate_thresholds': rate_thresholds,
+        'model_data': __build_model_data(model_data)
+    }
+    return response
+
+
+def build_scores_response(model_data: List[Tuple[Dict, List[ModelScore]]]) -> Dict:
+    """
+    Constructs response for a message that contains metadata and scores for a list of flu models
+    :param model_data:
+    :return: a dictionary with the data in serialisable form
+    """
+    response = {
+        'model_data': __build_model_data(model_data)
+    }
+    return response
+
+
+def __build_model_data(model_data: List[Tuple[Dict, List[ModelScore]]]) -> List:
+    """
+    Constructs list of dictionaries containing metadata and scores from flu models
+    :param model_data:
+    :return: a list with the model metadata and scores
+    """
     flu_model_data = []
     for model_data_item, model_scores_item in model_data:
         converted_model_scores = [
@@ -40,9 +66,4 @@ def build_models_and_metadata(
         model_data_item['start_date'] = model_data_item['start_date'].strftime('%Y-%m-%d')
         model_data_item['end_date'] = model_data_item['end_date'].strftime('%Y-%m-%d')
         flu_model_data.append(model_data_item)
-    response = {
-        'model_list': flu_model_list,
-        'rate_thresholds': rate_thresholds,
-        'model_data': flu_model_data
-    }
-    return response
+    return flu_model_data
