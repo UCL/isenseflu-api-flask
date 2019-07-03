@@ -6,13 +6,13 @@ from datetime import date
 from unittest import TestCase
 
 from app.models import FluModel, ModelScore
-from app.response_template_registry import build_models_and_metadata, build_scores_response
+from app.response_template_registry import build_root_plink_twlink_response, build_scores_response
 
 
 class ResponsesTestCase(TestCase):
     """ Test case for response_template_registry.py """
 
-    def test_build_models_and_metadata(self):
+    def test_build_root_plink_twlink_response(self):
         model_list = [
             {'id': 1, 'name': 'Test Model'},
             {'id': 2, 'name': 'Another Test Model'}
@@ -63,7 +63,7 @@ class ResponsesTestCase(TestCase):
             },
             [flu_model_score_1, flu_model_score_2]
         )]
-        result = build_models_and_metadata(flu_model_list, rate_thresholds, flu_model_data)
+        result = build_root_plink_twlink_response(flu_model_list, rate_thresholds, flu_model_data)
         self.assertEquals(result, expected)
 
     def test_build_scores_response(self):

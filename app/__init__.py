@@ -25,7 +25,7 @@ def create_app(config_name):
         get_model_scores_for_dates, get_model_function, get_default_flu_model, get_default_flu_model_30days, \
         get_rate_thresholds, get_flu_models_for_ids, has_valid_token, set_model_display, get_all_flu_models, \
         get_flu_model_for_model_region_and_dates, get_flu_model_for_model_id_and_dates
-    from app.response_template_registry import build_models_and_metadata
+    from app.response_template_registry import build_root_plink_twlink_response
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -39,7 +39,7 @@ def create_app(config_name):
         flu_models = get_public_flu_models()
         if not model_data or not flu_models:
             return '', status.HTTP_204_NO_CONTENT
-        response = build_models_and_metadata(
+        response = build_root_plink_twlink_response(
             model_list=flu_models,
             rate_thresholds=get_rate_thresholds(model_data['start_date']),
             model_data=[(model_data, model_scores)]
@@ -91,7 +91,7 @@ def create_app(config_name):
                 mod_scores = smooth_scores
             model_data.append((mod_data, mod_scores))
             start_dates.append(mod_data['start_date'])
-        response = build_models_and_metadata(
+        response = build_root_plink_twlink_response(
             model_list=get_public_flu_models(),
             rate_thresholds=get_rate_thresholds(min(start_dates)),
             model_data=model_data
@@ -177,7 +177,7 @@ def create_app(config_name):
             datetime.strptime(request.args.get('start'), '%Y-%m-%d').date(),
             datetime.strptime(request.args.get('end'), '%Y-%m-%d').date()
         )
-        response = build_models_and_metadata(
+        response = build_root_plink_twlink_response(
             model_list=get_public_flu_models(),
             rate_thresholds=get_rate_thresholds(model_data['start_date']),
             model_data=[(model_data, model_scores)]

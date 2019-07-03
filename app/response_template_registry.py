@@ -7,12 +7,12 @@ from typing import Dict, List, Tuple
 from app.models import FluModel, ModelScore
 
 
-def build_models_and_metadata(
+def build_root_plink_twlink_response(
         model_list: List[FluModel],
         rate_thresholds: Dict[str, Dict],
         model_data: List[Tuple[Dict, List[ModelScore]]]) -> Dict:
     """
-    Constructs structure for a message that contains the list of all public models, rate thresholds and the metadata
+    Constructs response for a message that contains the list of all public models, rate thresholds and the metadata
     and scores selected
     :param model_list: as returned by app.models_query_registry.get_public_flu_models
     :param rate_thresholds:
