@@ -321,7 +321,7 @@ class InitRoutesTestCase(TestCase):
         response = self.client().get('/twlink')
         self.assertEqual(response.status_code, 400)
 
-    def test_get_twlink(self):
+    def test_get_twlink_old_link(self):
         flumodel = FluModel()
         flumodel.name = 'Test Model'
         flumodel.is_public = True
@@ -362,6 +362,58 @@ class InitRoutesTestCase(TestCase):
             DB.session.add(default_model)
             DB.session.commit()
         response = self.client().get('/twlink?model_regions-0=1-e&start=2018-06-01&end=2018-06-10')
+        self.assertListEqual(response.get_json()['model_list'], [{'id': 1, 'name': 'Test Model'}])
+        self.assertEqual(len(response.get_json()['model_data'][0]['data_points']), 10)
+        expected = {
+            'low_value': {'label': 'Low epidemic rate', 'value': 0.1},
+            'medium_value': {'label': 'Medium epidemic rate', 'value': 0.2},
+            'high_value': {'label': 'High epidemic rate', 'value': 0.3},
+            'very_high_value': {'label': 'Very high epidemic rate', 'value': 0.4}
+        }
+        self.assertDictEqual(response.get_json()['rate_thresholds'], expected)
+
+    def test_get_twlink_current_link(self):
+        flumodel = FluModel()
+        flumodel.id = 1
+        flumodel.name = 'Test Model'
+        flumodel.is_public = True
+        flumodel.is_displayed = True
+        flumodel.source_type = 'google'
+        flumodel.calculation_parameters = 'matlab_model,1'
+        flumodel.model_region_id = '1-e'
+        dates = [date(2018, 6, d) for d in range(1, 30)]
+        datapoints = []
+        for d in dates:
+            entry = ModelScore()
+            entry.region = 'e'
+            entry.score_date = d
+            entry.calculation_timestamp = datetime.now()
+            entry.score_value = 1.23
+            entry.confidence_interval_lower = 0.81
+            entry.confidence_interval_upper = 1.65
+            datapoints.append(entry)
+        flumodel.model_scores = datapoints
+        model_function = ModelFunction()
+        model_function.id = 1
+        model_function.function_name = 'matlab_model'
+        model_function.average_window_size = 1
+        model_function.flu_model_id = 1
+        model_function.has_confidence_interval = True
+        default_model = DefaultFluModel()
+        default_model.flu_model_id = 1
+        rate_thresholds = RateThresholdSet()
+        rate_thresholds.low_value = 0.1
+        rate_thresholds.medium_value = 0.2
+        rate_thresholds.high_value = 0.3
+        rate_thresholds.very_high_value = 0.4
+        rate_thresholds.valid_from = date(2010, 1, 1)
+        with self.app.app_context():
+            flumodel.save()
+            model_function.save()
+            rate_thresholds.save()
+            DB.session.add(default_model)
+            DB.session.commit()
+        response = self.client().get('/twlink?id=1&start=2018-06-01&end=2018-06-10')
         self.assertListEqual(response.get_json()['model_list'], [{'id': 1, 'name': 'Test Model'}])
         self.assertEqual(len(response.get_json()['model_data'][0]['data_points']), 10)
         expected = {

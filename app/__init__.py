@@ -142,17 +142,25 @@ def create_app(config_name):
     @app.route('/twlink', methods=['GET'])
     def twitterlink_route():
         """ Returns the scores and metadata for a model linked from Twitter """
-        if not all(e in request.args for e in ['model_regions-0', 'start', 'end']):
+        if not all(e in request.args for e in ['start', 'end']) \
+                and not any(e in request.args for e in ['id', 'model_regions-0']):
             return '', status.HTTP_400_BAD_REQUEST
-        model_data, model_scores = get_flu_model_for_model_region_and_dates(
-            str(request.args.get('model_regions-0')),
-            datetime.strptime(request.args.get('start'), '%Y-%m-%d').date(),
-            datetime.strptime(request.args.get('end'), '%Y-%m-%d').date()
-        )
+        start_date = datetime.strptime(request.args.get('start'), '%Y-%m-%d').date()
+        end_date = datetime.strptime(request.args.get('end'), '%Y-%m-%d').date()
+        model_data, model_scores = None, None
+        if 'id' in request.args:
+            model_id = int(request.args.get('id'))
+            model_data, model_scores = get_flu_model_for_model_id_and_dates(model_id, start_date, end_date)
+        elif 'model_regions-0' in request.args:
+            legacy_id = str(request.args.get('model_regions-0'))
+            model_data, model_scores = get_flu_model_for_model_region_and_dates(legacy_id, start_date, end_date)
+        model_data_list = [(model_data, model_scores)]
+        if model_data_list == [(None, None)]:
+            model_data_list = []
         response = build_root_plink_twlink_response(
             model_list=get_public_flu_models(),
             rate_thresholds=get_rate_thresholds(model_data['start_date']),
-            model_data=[(model_data, model_scores)]
+            model_data=model_data_list
         )
         if response:
             return response, status.HTTP_200_OK
