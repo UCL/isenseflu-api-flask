@@ -117,12 +117,19 @@ Pull requests are welcome. For major changes, especially changes that require th
 
 - David Guzman (Github: [@david-guzman](https://github.com/david-guzman))
 
+i-sense flu app is based on the Fludetector tool, designed and developed by:
+
+- Vasileios Lampos
+- William Mayor
+- David Guzman
+
+More details in the [AUTHORS.md](AUTHORS.md) file.
 
 ## Acknowledgements
 
-i-sense flu publish is supported by the EPSRC IRC project [i-sense](https://www.i-sense.org.uk/) (Early-Warning Sensing Systems for Infectious Diseases).
+i-sense flu api is supported by the EPSRC IRC project [i-sense](https://www.i-sense.org.uk/) (Early-Warning Sensing Systems for Infectious Diseases).
 
 
 ## Copyright
 
-isenseflu-api-flask is licensed under the GNU General Public License, v3. A copy of this license is included in the file [LICENSE.md](LICENSE.md).
+i-sense flu api is licensed under the GNU General Public License, v3. A copy of this license is included in the file [LICENSE.md](LICENSE.md).
