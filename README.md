@@ -95,6 +95,14 @@ APP_CONFIG=testing python manage.py test
 
 ![coverage](coverage.svg)
 
+Install `coverage` and `coverage-badge` locally ( `. venv/bin/activate required`)
+
+```bash
+pip install coverage coverage-badge
+```
+
+Run `coverage` against the source directories
+
 ```bash
 coverage run --source app,scheduler manage.py test
 coverage html
