@@ -21,14 +21,15 @@
  in models.py
 """
 
+# pylint: disable=no-member
 from datetime import date, timedelta
 from typing import List, Tuple, Dict
 
 from sqlalchemy.sql import func
 
 from app import DB
-from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, FluModelGoogleTerm, \
-    ModelFunction, DefaultFluModel, RateThresholdSet, TokenInfo
+from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm, \
+    FluModelGoogleTerm, ModelFunction, DefaultFluModel, RateThresholdSet, TokenInfo
 
 
 def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
@@ -54,8 +55,12 @@ def get_flu_model_for_model_region_and_dates(
         start_date: date,
         end_date: date
 ) -> Tuple[Dict, List[ModelScore]]:
-    """ Returns model data for the period start_date to end_date and corresponding model_region_id """
-    flu_model = FluModel.query.filter_by(is_public=True, is_displayed=True, model_region_id=model_region_id).first()
+    """ Returns model data for the period start_date to end_date
+    and corresponding model_region_id
+    """
+    flu_model = FluModel.query.filter_by(
+        is_public=True, is_displayed=True, model_region_id=model_region_id
+    ).first()
     if not flu_model:
         return None, None
     model_scores = ModelScore.query.filter(
@@ -238,7 +243,7 @@ def get_google_terms_and_scores(model_id: int, score_date: date) -> List[Tuple[s
 def get_google_terms_and_averages(
         model_id: int,
         window_size: int,
-        score_date:date
+        score_date: date
 ) -> List[Tuple[str, float]]:
     """ Returns the average scores for each term for a date window """
     start_date = score_date - timedelta(days=window_size)
@@ -262,7 +267,9 @@ def get_rate_thresholds(
         RateThresholdSet.high_value,
         RateThresholdSet.very_high_value)\
         .filter(RateThresholdSet.valid_from <= start_date)\
-        .filter((RateThresholdSet.valid_until >= start_date) | (RateThresholdSet.valid_until.is_(None)))\
+        .filter(
+            (RateThresholdSet.valid_until >= start_date) | (RateThresholdSet.valid_until.is_(None))
+        )\
         .first()
     if result_set is not None:
         return {

@@ -66,7 +66,7 @@ class FluModel(DB.Model):
         return '<Model %s>' % self.name
 
 
-class DefaultFluModel(DB.Model):
+class DefaultFluModel(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model to define the default public model to be returned by the API
     """
@@ -78,7 +78,7 @@ class DefaultFluModel(DB.Model):
         return '<DefaultFluModel %d>' % self.flu_model_id
 
 
-class ModelFunction(DB.Model):
+class ModelFunction(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model to define the function used to calculate the model scores
     """
@@ -205,7 +205,7 @@ class GoogleDate(DB.Model):
         )
 
 
-class FluModelGoogleTerm(DB.Model):
+class FluModelGoogleTerm(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model representing a link table between FluModel and GoogleTerm
     """
@@ -219,7 +219,7 @@ class FluModelGoogleTerm(DB.Model):
         DB.session.commit()
 
 
-class RateThresholdSet(DB.Model):
+class RateThresholdSet(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model representing the list of current set of epidemic rate thresholds as published by PHE
     """
@@ -239,7 +239,7 @@ class RateThresholdSet(DB.Model):
         DB.session.commit()
 
 
-class TokenInfo(DB.Model):
+class TokenInfo(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model representing a set of tokens
     """

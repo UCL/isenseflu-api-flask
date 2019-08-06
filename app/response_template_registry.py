@@ -17,7 +17,8 @@
 # along with i-sense flu api.  If not, see <http://www.gnu.org/licenses/>.
 
 """
- Registry of templating functions for the construction of JSON responses to be returned by the Flask API
+ Registry of templating functions for the construction of JSON responses to be returned
+ by the Flask API
 """
 
 from typing import Dict, List, Tuple
@@ -30,8 +31,8 @@ def build_root_plink_twlink_response(
         rate_thresholds: Dict[str, Dict],
         model_data: List[Tuple[Dict, List[ModelScore]]]) -> Dict:
     """
-    Constructs response for a message that contains the list of all public models, rate thresholds and the metadata
-    and scores selected
+    Constructs response for a message that contains the list of all public models,
+    rate thresholds and the metadata and scores selected
     :param model_list: as returned by app.models_query_registry.get_public_flu_models
     :param rate_thresholds:
     :param model_data:
