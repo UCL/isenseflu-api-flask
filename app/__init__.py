@@ -28,7 +28,7 @@ from flask_api import FlaskAPI, status
 from flask_csv import send_csv
 from flask_sqlalchemy import SQLAlchemy
 
-from instance.config import app_config
+from instance.config import APP_CONFIG
 
 
 DB = SQLAlchemy()
@@ -47,7 +47,7 @@ def create_app(config_name):
         build_scores_response
 
     app = FlaskAPI(__name__, instance_relative_config=True)
-    app.config.from_object(app_config[config_name])
+    app.config.from_object(APP_CONFIG[config_name])
     app.config.from_pyfile('config.ini', silent=True)
     DB.init_app(app)
 
