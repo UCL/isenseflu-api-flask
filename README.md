@@ -4,6 +4,7 @@
 
 API component of the i-sense flu application. Calculates and serves the model score data displayed by the i-sense flu app component [https://github.com/UCL/isenseflu-app-react](https://github.com/UCL/isenseflu-app-react).
 
+[![Build Status](https://travis-ci.org/UCL/isenseflu-api-flask.svg?branch=master)](https://travis-ci.org/UCL/isenseflu-api-flask)
 ![GitHub release](https://img.shields.io/github/release/UCL/isenseflu-api-flask.svg)
 
 ## Background
@@ -94,6 +95,14 @@ APP_CONFIG=testing python manage.py test
 ### Test coverage
 
 ![coverage](coverage.svg)
+
+Install `coverage` and `coverage-badge` locally ( `. venv/bin/activate required`)
+
+```bash
+pip install coverage coverage-badge
+```
+
+Run `coverage` against the source directories
 
 ```bash
 coverage run --source app,scheduler manage.py test
