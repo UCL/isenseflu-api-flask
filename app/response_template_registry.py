@@ -1,5 +1,24 @@
+# i-sense flu api: REST API, and data processors for the i-sense flu service from UCL.
+# (c) 2019, UCL <https://www.ucl.ac.uk/
+#
+# This file is part of i-sense flu api
+#
+# i-sense flu api is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# i-sense flu api is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with i-sense flu api.  If not, see <http://www.gnu.org/licenses/>.
+
 """
- Registry of templating functions for the construction of JSON responses to be returned by the Flask API
+ Registry of templating functions for the construction of JSON responses to be returned
+ by the Flask API
 """
 
 from typing import Dict, List, Tuple
@@ -12,8 +31,8 @@ def build_root_plink_twlink_response(
         rate_thresholds: Dict[str, Dict],
         model_data: List[Tuple[Dict, List[ModelScore]]]) -> Dict:
     """
-    Constructs response for a message that contains the list of all public models, rate thresholds and the metadata
-    and scores selected
+    Constructs response for a message that contains the list of all public models,
+    rate thresholds and the metadata and scores selected
     :param model_list: as returned by app.models_query_registry.get_public_flu_models
     :param rate_thresholds:
     :param model_data:

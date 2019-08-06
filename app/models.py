@@ -1,3 +1,21 @@
+# i-sense flu api: REST API, and data processors for the i-sense flu service from UCL.
+# (c) 2019, UCL <https://www.ucl.ac.uk/
+#
+# This file is part of i-sense flu api
+#
+# i-sense flu api is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# i-sense flu api is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with i-sense flu api.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Data model used by the app (SQLAlchemy is used as ORM)
 """
@@ -48,7 +66,7 @@ class FluModel(DB.Model):
         return '<Model %s>' % self.name
 
 
-class DefaultFluModel(DB.Model):
+class DefaultFluModel(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model to define the default public model to be returned by the API
     """
@@ -60,7 +78,7 @@ class DefaultFluModel(DB.Model):
         return '<DefaultFluModel %d>' % self.flu_model_id
 
 
-class ModelFunction(DB.Model):
+class ModelFunction(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model to define the function used to calculate the model scores
     """
@@ -187,7 +205,7 @@ class GoogleDate(DB.Model):
         )
 
 
-class FluModelGoogleTerm(DB.Model):
+class FluModelGoogleTerm(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model representing a link table between FluModel and GoogleTerm
     """
@@ -201,7 +219,7 @@ class FluModelGoogleTerm(DB.Model):
         DB.session.commit()
 
 
-class RateThresholdSet(DB.Model):
+class RateThresholdSet(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model representing the list of current set of epidemic rate thresholds as published by PHE
     """
@@ -221,7 +239,7 @@ class RateThresholdSet(DB.Model):
         DB.session.commit()
 
 
-class TokenInfo(DB.Model):
+class TokenInfo(DB.Model):  # pylint: disable=too-few-public-methods
     """
     ORM Model representing a set of tokens
     """

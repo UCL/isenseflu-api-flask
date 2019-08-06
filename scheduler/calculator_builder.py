@@ -1,11 +1,30 @@
+# i-sense flu api: REST API, and data processors for the i-sense flu service from UCL.
+# (c) 2019, UCL <https://www.ucl.ac.uk/
+#
+# This file is part of i-sense flu api
+#
+# i-sense flu api is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# i-sense flu api is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with i-sense flu api.  If not, see <http://www.gnu.org/licenses/>.
+
 """
  Builds caller to Matlab, Octave or any other remote engine for numerical calculation
 """
 from abc import ABC, abstractmethod
 from enum import Enum
-from numpy import array
 from tempfile import NamedTemporaryFile
 from typing import List, Tuple
+
+from numpy import array
 
 
 class CalculatorType(Enum):
@@ -30,7 +49,6 @@ class Calculator(ABC):
         It returns a single float corresponding to the score without confidence
         intervals
         """
-        pass
 
     @abstractmethod
     def calculate_model_score_and_confidence(self,
@@ -42,7 +60,6 @@ class Calculator(ABC):
         It returns a tuple containing the model sscore followed by the lower
         and the upper bound confidence interval
         """
-        pass
 
 
 class MatlabCalculator(Calculator):
@@ -95,7 +112,8 @@ class MatlabCalculator(Calculator):
         fhout.close()
         return float(value[0]), float(value[1]), float(value[2])
 
-    def _write_tempfile(self, averages):
+    @staticmethod
+    def _write_tempfile(averages):
         fhin = NamedTemporaryFile(mode='w+t', prefix='isenseflu-matlab-input.')
         fhout = NamedTemporaryFile(mode='w+t', prefix='isenseflu-matlab-output.')
         fhin.write('\n'.join('%s,%f' % a for a in averages))
@@ -192,3 +210,4 @@ def build_calculator(calculator_type: CalculatorType) -> Calculator:
         return RemoteCalculator()
     if calculator_type is CalculatorType.OCTAVE:
         return OctaveCalculator()
+    raise NotImplementedError
