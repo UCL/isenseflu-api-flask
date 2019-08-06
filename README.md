@@ -4,6 +4,7 @@
 
 API component of the i-sense flu application. Calculates and serves the model score data displayed by the i-sense flu app component [https://github.com/UCL/isenseflu-app-react](https://github.com/UCL/isenseflu-app-react).
 
+[![Build Status](https://travis-ci.org/UCL/isenseflu-api-flask.svg?branch=master)](https://travis-ci.org/UCL/isenseflu-api-flask)
 ![GitHub release](https://img.shields.io/github/release/UCL/isenseflu-api-flask.svg)
 
 ## Background
