@@ -36,7 +36,7 @@ logging.basicConfig()
 logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 
-class Scheduler(object):
+class Scheduler:
     """
     Manages an instance of apscheduler
     """

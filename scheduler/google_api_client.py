@@ -115,9 +115,8 @@ class GoogleApiClient:
             if code == 403 and reason == 'dailyLimitExceeded':
                 self.block_until = datetime.combine(date.today() + timedelta(days=1), dtime.min)
                 raise RuntimeError('%s: blocked until %s' % (reason, self.block_until))
-            else:
-                import logging
-                logging.warning(http_error)
+            import logging
+            logging.warning(http_error)
             return []
 
     def is_accepting_calls(self):

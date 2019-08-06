@@ -21,10 +21,11 @@
 """
 
 from datetime import date, timedelta
-from flask_api import FlaskAPI
 from logging import ERROR, INFO, log, basicConfig
 from os import getenv
 from typing import List
+
+from flask_api import FlaskAPI
 
 from app.models_query_registry import get_last_score_date
 from .calculator_builder import build_calculator, CalculatorType
@@ -42,7 +43,7 @@ from .score_query_registry import get_date_ranges_google_score,\
 basicConfig(format='%(asctime)s %(levelname)s : %(message)s', level=INFO)
 
 
-def run(model_id: int, start: date, end: date):
+def run(model_id: int, start: date, end: date):  # pylint: disable=too-many-locals
     """ Calculate the model score for the date range specified """
     missing_google_range, missing_google_list = get_date_ranges_google_score(model_id, start, end)
     if missing_google_range and missing_google_list:
@@ -65,8 +66,11 @@ def run(model_id: int, start: date, end: date):
         calculator_type = CalculatorType[getenv('CALCULATOR_TYPE', 'OCTAVE')]
         calculator_engine = build_calculator(calculator_type)
         for missing_model_date in missing_model_dates:
-            scores_or_averages = get_moving_averages_or_scores(model_id, model_function['average_window_size'],
-                                                               missing_model_date)
+            scores_or_averages = get_moving_averages_or_scores(
+                model_id,
+                model_function['average_window_size'],
+                missing_model_date
+            )
             msg_score = set_and_get_model_score(
                 model_id,
                 calculator_engine,

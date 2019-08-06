@@ -30,7 +30,7 @@ _GOOGLE_MAX_LINES = 2000
 _GOOGLE_MAX_INTERVAL_PER_BATCH = timedelta(days=66)
 
 
-class GoogleBatch(object):
+class GoogleBatch:  # pylint: disable=too-few-public-methods
     """
     Container of query parameters for running requests on Google API. It processes
     entries to comply with the limits set by the API, such as number of data points
