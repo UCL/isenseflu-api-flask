@@ -32,7 +32,7 @@ i-sense flu is a multi-module application that uses Google search data to estima
 
 ## API Specification
 
-OpenAPI 3.0.1 Definition Document: https://github.com/UCL/fludetector-openapi
+OpenAPI 3.0.2 Definition Document: https://github.com/UCL/isenseflu-openapi
 
 ## Installation
 
@@ -83,6 +83,29 @@ python manage.py db upgrade
 ```
 
 Skip if using an existing instance of PostgreSQL
+
+### Models
+
+The scores are calculated using models for MATLAB/GNU Octave. Deploy both the `MAT` file and `m` script in the `octave` directory (create directory in the application root if it does not exist). The models are licensed separately and not distributed together with the Flask application, please enquire for details.
+
+## Usage
+
+### Flask API component
+
+The API component can be started with a Python WSGI HTTP server like `gunicorn` (included in `requirements.txt`), calling `run.py`. `gunicorn` listens by default on port 8000.
+
+```
+[venv/bin]/gunicorn run:APP
+```
+
+
+### Scheduling of calculation of scores
+
+The scheduler component uses Advanced Python Scheduler's (APScheduler) `BlockingScheduler` to help automate the calculation of scores. The `manage.py` script accepts CRON-type definitions for scheduling jobs.
+
+```
+[venv/bin]/python manage.py run_model_sched [model-id] "*/30 * * * *'
+```
 
 ## Testing
 
