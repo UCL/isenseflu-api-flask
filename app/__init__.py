@@ -203,6 +203,9 @@ def create_app(config_name):
         start_date = str(request.args.get('startDate', def_start_date.strftime('%Y-%m-%d')))
         if start_date > end_date:
             return '', status.HTTP_400_BAD_REQUEST
+        resolution = str(request.args.get('resolution', 'day'))
+        if resolution not in ['day', 'week']:
+            return '', status.HTTP_400_BAD_REQUEST
         flu_models = get_flu_models_for_ids(ids)
         if flu_models:
             model_list = []
@@ -216,6 +219,8 @@ def create_app(config_name):
                 )
                 if model_scores is None:
                     return '', status.HTTP_204_NO_CONTENT
+                if resolution == 'week':
+                    model_scores = [s for s in model_scores if s.score_date.weekday() == 6]
                 model_datapoints = []
                 for model_score in model_scores:
                     child = {

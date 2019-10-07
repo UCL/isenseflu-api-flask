@@ -260,9 +260,11 @@ class InitRoutesTestCase(TestCase):
         with self.app.app_context():
             flumodel.save()
             model_function.save()
-            response = self.client().get('/csv?id=1&tartDate=2018-06-10&endDate=2018-06-10')
-            expected = r'attachment; filename=RawScores-\d{13}\.csv'
-            self.assertRegexpMatches(response.headers['Content-Disposition'], expected)
+            response = self.client().get('/csv?id=1&tartDate=2018-06-01&endDate=2018-06-07&resolution=week')
+            expected_header = r'attachment; filename=RawScores-\d{13}\.csv'
+            expected_data = b'score_date,score_Test Model\r\n2018-06-03,4.333333333333334\r\n'
+            self.assertEquals(response.data, expected_data)
+            self.assertRegexpMatches(response.headers['Content-Disposition'], expected_header)
 
     def test_post_config(self):
         flumodel = FluModel()
