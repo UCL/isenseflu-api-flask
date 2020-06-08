@@ -80,9 +80,10 @@ class ScoreCalculatorTestCase(TestCase):
             model_function.has_confidence_interval = False
             model_function.save()
             with patch.object(GoogleApiClient, 'fetch_google_scores', lambda s, x, y, z: []):
-                with self.assertLogs(level='ERROR') as logContext:
+                with self.assertLogs(level='ERROR') as logContext, self.assertRaises(RuntimeError) as errorCtx:
                     score_calculator.run(1, date.today(), date.today())
                 self.assertListEqual(logContext.output, ['ERROR:root:Retrieval of Google scores failed'])
+                self.assertTrue('Retry call to Google API' in str(errorCtx.exception))
 
     def test_twitter_enabled(self):
         """
@@ -119,7 +120,7 @@ class ScoreCalculatorTestCase(TestCase):
         """
         Scenario: Test runsched function to calculate model scores
         Given a last score_date of date.today() - timedelta(days=5)
-        Then score_calculator.run is called with a start date of date.today() - timedelta(days=4)
+        Then score_calculator.run is called with a start date of date.today() - timedelta(days=3)
         And end date of date.today() - timedelta(days=4)
         """
         with self.app.app_context():
@@ -131,7 +132,7 @@ class ScoreCalculatorTestCase(TestCase):
             model_score.save()
         with patch('scheduler.score_calculator.run') as patched_run:
             score_calculator.runsched([1], self.app)
-            patched_run.assert_called_with(1, date.today() - timedelta(days=4), date.today() - timedelta(days=4))
+            patched_run.assert_called_with(1, date.today() - timedelta(days=4), date.today() - timedelta(days=3))
 
     def tearDown(self):
         DB.drop_all(app=self.app)

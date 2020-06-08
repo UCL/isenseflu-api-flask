@@ -53,7 +53,7 @@ def run(model_id: int, start: date, end: date):  # pylint: disable=too-many-loca
             batch_scores = api_client.fetch_google_scores(terms, start_date, end_date)
             if not batch_scores:
                 log(ERROR, 'Retrieval of Google scores failed')
-                return
+                raise RuntimeError('Retry call to Google API')
             set_google_scores(batch_scores)
         set_and_verify_google_dates(model_id, missing_google_list)  # Raise an error if missing data
     else:
@@ -87,10 +87,18 @@ def run(model_id: int, start: date, end: date):  # pylint: disable=too-many-loca
         log(INFO, 'Model scores have already been collected for this time period')
 
 
+def _runschedForModel(model_id:int, end_days_delta:int):
+    """ Run calculation of model score for a particular model """
+    start = get_last_score_date(model_id) + timedelta(days=1)
+    end = date.today() - timedelta(days=end_days_delta)
+    run(model_id, start, end)
+
+
 def runsched(model_id_list: List[int], app: FlaskAPI):
     """ Calculate the model score for the date range specified inside the scheduler """
     with app.app_context():
         for model_id in model_id_list:
-            start = get_last_score_date(model_id) + timedelta(days=1)
-            end = date.today() - timedelta(days=4)
-            run(model_id, start, end)
+            try:
+                _runschedForModel(model_id, 3)
+            except RuntimeError:
+                _runschedForModel(model_id, 4)
