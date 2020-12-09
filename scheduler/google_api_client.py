@@ -36,7 +36,7 @@ _DISCOVERY_SERVICE_URL = 'https://www.googleapis.com/discovery/v1/apis/trends/v1
 _GEORESTRICTION_REGION = 'GB-ENG'
 _GOOGLE_API_KEY = getenv("GOOGLE_API_KEY", "")
 _ISO_FORMAT = '%Y-%m-%d'
-_TIMELINE_RESOLUTION = 'day'
+_TIMELINE_RESOLUTION = 'DAY'
 
 
 class GoogleApiClient:

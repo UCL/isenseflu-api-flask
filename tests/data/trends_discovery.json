@@ -573,10 +573,10 @@
      "description": "A value of TimeResolution enum. Week is default.",
      "default": "week",
      "enum": [
-      "day",
-      "month",
-      "week",
-      "year"
+      "DAY",
+      "MONTH",
+      "WEEK",
+      "YEAR"
      ],
      "enumDescriptions": [
       "",

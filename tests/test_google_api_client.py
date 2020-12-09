@@ -137,7 +137,10 @@ class GoogleApiClientTestCase(TestCase):
             end = start + timedelta(days=1)
             with self.assertLogs(level='WARNING') as logContext:
                 instance.fetch_google_scores(terms, start, end)
-            self.assertListEqual(logContext.output, ['WARNING:root:<HttpError 500 "Backend Error">'])
+            self.assertListEqual(
+                logContext.output,
+                ['WARNING:root:<HttpError 500 when requesting None returned "Backend Error". Details: "Backend Error">']
+            )
 
     def test_http_error(self):
         """
@@ -176,7 +179,10 @@ class GoogleApiClientTestCase(TestCase):
             end = start + timedelta(days=1)
             with self.assertLogs(level='WARNING') as logContext:
                 instance.fetch_google_scores(terms, start, end)
-            self.assertListEqual(logContext.output, ['WARNING:root:<HttpError 400 "Bad Request">'])
+            self.assertListEqual(
+                logContext.output,
+                ['WARNING:root:<HttpError 400 when requesting None returned "Bad Request". Details: "Bad Request">']
+            )
 
     def test_blocked_until(self):
         """
