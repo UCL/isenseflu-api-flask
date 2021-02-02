@@ -132,7 +132,7 @@ class ScoreCalculatorTestCase(TestCase):
             model_score.save()
         with patch('scheduler.score_calculator.run') as patched_run:
             score_calculator.runsched([1], self.app)
-            patched_run.assert_called_with(1, date.today() - timedelta(days=4), date.today() - timedelta(days=3))
+            patched_run.assert_called_with(1, date.today() - timedelta(days=4), date.today() - timedelta(days=4))
 
     def tearDown(self):
         DB.drop_all(app=self.app)

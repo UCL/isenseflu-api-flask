@@ -99,6 +99,6 @@ def runsched(model_id_list: List[int], app: FlaskAPI):
     with app.app_context():
         for model_id in model_id_list:
             try:
-                _runschedForModel(model_id, 3)
-            except RuntimeError:
                 _runschedForModel(model_id, 4)
+            except RuntimeError:
+                _runschedForModel(model_id, 5)
