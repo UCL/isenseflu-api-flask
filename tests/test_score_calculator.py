@@ -130,9 +130,9 @@ class ScoreCalculatorTestCase(TestCase):
             model_score.score_value = 0.5
             model_score.region = 'e'
             model_score.save()
-        with patch('scheduler.score_calculator.run') as patched_run:
+        with patch('scheduler.score_calculator._run_sched_for_model_no_set_dates') as patched_run:
             score_calculator.runsched([1], self.app)
-            patched_run.assert_called_with(1, date.today() - timedelta(days=4), date.today() - timedelta(days=4))
+            patched_run.assert_called_with(1)
 
     def tearDown(self):
         DB.drop_all(app=self.app)
