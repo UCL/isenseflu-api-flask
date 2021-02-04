@@ -99,6 +99,25 @@ def set_google_scores(
         set_google_scores_for_term(batch_item['term'], points)
 
 
+def set_google_scores_except(
+        google_scores: List[Dict[str, Union[str, List[Dict[str, Union[str, float]]]]]],
+        except_date: date
+):
+    """
+    Iterates through the batch item to reformat the data points from dictionary to a tuple
+    before persisting the data. It parses the data converting it into a datetime.date
+    It skips the date set by except_date
+    """
+    for batch_item in google_scores:
+        points = [
+            (
+                dt.strptime(p['date'], '%b %d %Y').date(),
+                p['value']
+            ) for p in batch_item['points'] if dt.strptime(p['date'], '%b %d %Y').date() != except_date
+        ]
+        set_google_scores_for_term(batch_item['term'], points)
+
+
 def set_and_verify_google_dates(model_id: int, google_dates: List[date]):
     """
     Persists the date of a complete set of scores if retrieved for all terms in a model
