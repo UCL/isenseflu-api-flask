@@ -51,7 +51,8 @@ class GoogleApiClient:
             version=SERVICE_VERSION,
             discoveryServiceUrl=_DISCOVERY_SERVICE_URL,
             developerKey=_GOOGLE_API_KEY,
-            cache_discovery=False
+            cache_discovery=False,
+            static_discovery=False
         )
         self.block_until = None
 
