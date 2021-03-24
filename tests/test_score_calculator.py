@@ -116,6 +116,112 @@ class ScoreCalculatorTestCase(TestCase):
                 result_after = ModelScore.query.filter_by(flu_model_id=1).all()
                 self.assertEqual(len(result_after), 1)
 
+    def test_runsched_ntimes(self):
+        """
+        Scenario: Test runsched function to calculate model scores for more than one id
+        """
+        with self.app.app_context() \
+             and patch('scheduler.score_calculator._run_sched_for_model_no_set_dates') as patched_run:
+            score_calculator.runsched([1, 2], self.app)
+            self.assertEqual(patched_run.call_count, 2)
+
+    def test_runsched_date_assert_trigger(self):
+        """
+        Test runsched function to trigger an assertion error when number of days since
+        last Google score date is equal or greater than 66
+        """
+        with self.app.app_context():
+            google_date = GoogleDate(1, date.today() - timedelta(days=66))
+            google_date.save()
+            self.assertRaises(AssertionError, score_calculator.runsched, [1], self.app)
+
+    def test_runsched_google_scores_already_collected(self):
+        """
+        Test runsched function when Google scores have already been collected for the
+        requested time period (end date currently set to T - 3 days)
+        """
+        with self.app.app_context():
+            google_date = GoogleDate(1, date.today() - timedelta(days=3))
+            google_date.save()
+            with self.assertLogs(level='INFO') as logContext:
+                score_calculator.runsched([1], self.app)
+                self.assertListEqual(logContext.output, [
+                    'INFO:root:Google scores have already been collected for this time period',
+                    'INFO:root:Model scores have already been collected for this time period'
+                ])
+
+    def test_runsched_google_scores_get_date_ranges(self):
+        """
+        Evaluate parameters passed to get_date_ranges_google_score function within
+        _run_sched_for_model_no_set_dates
+        """
+        last_date = date.today() - timedelta(days=4)
+        with self.app.app_context():
+            google_date = GoogleDate(1, last_date)
+            google_date.save()
+            model_score = ModelScore()
+            model_score.flu_model_id = 1
+            model_score.score_date = date.today() - timedelta(days=3)
+            model_score.score_value = 0.5
+            model_score.region = 'e'
+            model_score.save()
+            with patch('scheduler.score_calculator.get_date_ranges_google_score') as patched_call:
+                patched_call.return_value = (None, None)
+                score_calculator.runsched([1], self.app)
+                patched_call.assert_called_with(1, last_date + timedelta(days=1), date.today() - timedelta(days=3))
+
+    def test_runsched_get_google_batch(self):
+        """
+        Evaluate parameters passed to get_google_batch function in
+        _run_sched_for_model_no_set_dates
+        """
+        last_date = date.today() - timedelta(days=4)
+        end_date = date.today() - timedelta(days=3)
+        with self.app.app_context():
+            google_date = GoogleDate(1, last_date)
+            google_date.save()
+            model_score = ModelScore()
+            model_score.flu_model_id = 1
+            model_score.score_date = end_date
+            model_score.score_value = 0.5
+            model_score.region = 'e'
+            model_score.save()
+            with patch('scheduler.score_calculator.get_google_batch') as patched_call:
+                patched_call.return_value = []
+                score_calculator.runsched([1], self.app)
+                patched_call.assert_called_with(1, [(end_date, end_date)])
+
+    @patch('scheduler.score_calculator.GoogleApiClient')
+    @patch('scheduler.score_calculator.set_and_verify_google_dates')
+    def test_runsched_fetch_google_scores(self, mock_verify, mock_client):
+        """
+        Evaluate parameters passed to fetch_google_scores and set_and_verify_google_dates
+        functions in _run_sched_for_model_no_set_dates
+        """
+        last_date = date.today() - timedelta(days=4)
+        end_date = date.today() - timedelta(days=3)
+        with self.app.app_context():
+            google_date = GoogleDate(1, last_date)
+            google_date.save()
+            model_score = ModelScore()
+            model_score.flu_model_id = 1
+            model_score.score_date = end_date
+            model_score.score_value = 0.5
+            model_score.region = 'e'
+            model_score.save()
+            google_term = GoogleTerm()
+            google_term.id = 1
+            google_term.term = 'Term 1'
+            google_term.save()
+            flu_model_google_term = FluModelGoogleTerm()
+            flu_model_google_term.flu_model_id = 1
+            flu_model_google_term.google_term_id = 1
+            flu_model_google_term.save()
+            patched_api_client = mock_client.return_value
+            score_calculator.runsched([1], self.app)
+            patched_api_client.fetch_google_scores.assert_called_with(['Term 1'], last_date, end_date)
+            mock_verify.assert_called_with(1, [end_date])
+
     def test_runsched(self):
         """
         Scenario: Test runsched function to calculate model scores
@@ -130,9 +236,9 @@ class ScoreCalculatorTestCase(TestCase):
             model_score.score_value = 0.5
             model_score.region = 'e'
             model_score.save()
-        with patch('scheduler.score_calculator._run_sched_for_model_no_set_dates') as patched_run:
-            score_calculator.runsched([1], self.app)
-            patched_run.assert_called_with(1)
+            with patch('scheduler.score_calculator._run_sched_for_model_no_set_dates') as patched_run:
+                score_calculator.runsched([1], self.app)
+                patched_run.assert_called_with(1)
 
     def tearDown(self):
         DB.drop_all(app=self.app)

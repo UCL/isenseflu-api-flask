@@ -50,7 +50,8 @@ class GoogleApiClientTestCase(TestCase):
                 http=http,
                 developerKey='APIKEY',
                 requestBuilder=request_builder,
-                cache_discovery=False
+                cache_discovery=False,
+                static_discovery=False
             )
             instance.block_until = None
             terms = ['flu']
@@ -90,7 +91,8 @@ class GoogleApiClientTestCase(TestCase):
                 http=http,
                 developerKey='APIKEY',
                 requestBuilder=request_builder,
-                cache_discovery=False
+                cache_discovery=False,
+                static_discovery=False
             )
             instance.block_until = None
             terms = ['flu']
@@ -129,7 +131,8 @@ class GoogleApiClientTestCase(TestCase):
                 http=http,
                 developerKey='APIKEY',
                 requestBuilder=request_builder,
-                cache_discovery=False
+                cache_discovery=False,
+                static_discovery=False
             )
             instance.block_until = None
             terms = ['flu']
@@ -171,7 +174,8 @@ class GoogleApiClientTestCase(TestCase):
                 http=http,
                 developerKey='APIKEY',
                 requestBuilder=request_builder,
-                cache_discovery=False
+                cache_discovery=False,
+                static_discovery=False
             )
             instance.block_until = None
             terms = ['flu']
