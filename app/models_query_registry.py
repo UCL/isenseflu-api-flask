@@ -144,6 +144,14 @@ def get_last_score_date(model_id) -> DB.Date:
         .score_date
 
 
+def get_last_google_date(model_id: int) -> DB.Date:
+    """ Returns the last Google date for a particular model """
+    return GoogleDate.query.filter_by(flu_model_id=model_id)\
+        .order_by(GoogleDate.score_date.desc())\
+        .first()\
+        .score_date
+
+
 def get_existing_google_dates(model_id: int, start: date, end: date) -> List[Tuple[date]]:
     """ Returns dates with existing Google scores for a particular model ID between two dates """
     return DB.session.query(GoogleDate.score_date).distinct()\

@@ -27,7 +27,7 @@ from typing import List
 
 from flask_api import FlaskAPI
 
-from app.models_query_registry import get_last_score_date
+from app.models_query_registry import get_last_google_date
 from .calculator_builder import build_calculator, CalculatorType
 from .google_api_client import GoogleApiClient
 from .message_client import build_message_client
@@ -90,7 +90,7 @@ def run(model_id: int, start: date, end: date):  # pylint: disable=too-many-loca
 
 def _run_sched_for_model_no_set_dates(model_id:int):
     """ Run calculation of model_score for a particular model without setting dates """
-    last_score_date = get_last_score_date(model_id)
+    last_score_date = get_last_google_date(model_id)
     date_assert = date.today() - last_score_date
     assert date_assert.days < 66, "Number of days goes beyond the limit of 2,000 lines for 30 terms"
     expected_end_date = date.today() - timedelta(days=3)  # TODO: remove end date from the API call
@@ -102,12 +102,11 @@ def _run_sched_for_model_no_set_dates(model_id:int):
             api_client = GoogleApiClient()
             for terms, start_date, end_date in batch:
                 batch_scores = api_client.fetch_google_scores(terms, last_score_date, end_date)
-                if not batch_scores:
-                    log(ERROR, 'Retrieval of Google scores failed')
-                    raise RuntimeError('Retry call to Google API')
+                assert batch_scores, 'Retrieval of Google scores failed. Retry call to Google API'
                 set_google_scores_except(batch_scores, last_score_date)
+            set_and_verify_google_dates(model_id, missing_google_list)
     else:
-        log(INFO, 'Model scores have already been collected for this time period')
+        log(INFO, 'Google scores have already been collected for this time period')
     missing_model_dates = get_dates_missing_model_score(model_id, start, expected_end_date)
     if missing_model_dates:
         model_function = get_matlab_function_attr(model_id)
