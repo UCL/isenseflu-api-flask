@@ -8,7 +8,7 @@ Flask-SQLAlchemy==2.4.4
 google-api-python-client==2.0.2
 gunicorn==20.0.4
 MarkupSafe==2.0.1
-numpy==1.19.5
+numpy==1.21.0
 oct2py==5.2.0
 psycopg2-binary==2.8.6
 scipy==1.5.4
