@@ -54,6 +54,41 @@ class ScoreCalculatorTestCase(TestCase):
                 result_after = ModelScore.query.filter_by(flu_model_id=1).all()
                 self.assertEqual(len(result_after), 2)
 
+    def test_api_returning_zero_values(self):
+        """
+        Scenario: Test run function to attempt calculating model score for a specific date
+        Given the Google API returns zero for the term temperature
+        Then the retrieval of the scores and calculation of model scores is skipped
+        And the requested data is not available on Google API
+        And a warning log message is printed
+        """
+        with self.app.app_context():
+            google_date_1 = GoogleDate(1, date.today() - timedelta(days=1))
+            google_date_1.save()
+            google_term = GoogleTerm()
+            google_term.id = 1
+            google_term.term = 'Term 1'
+            google_term.save()
+            flu_model_google_term = FluModelGoogleTerm()
+            flu_model_google_term.flu_model_id = 1
+            flu_model_google_term.google_term_id = 1
+            flu_model_google_term.save()
+            model_function = ModelFunction()
+            model_function.flu_model_id = 1
+            model_function.function_name = 'matlab_function'
+            model_function.average_window_size = 1
+            model_function.has_confidence_interval = False
+            model_function.save()
+            with patch.multiple(
+                    GoogleApiClient, fetch_google_scores=DEFAULT, is_returning_non_zero_for_temperature=DEFAULT
+            ) as patch_dict, patch('scheduler.score_calculator.get_dates_missing_model_score') as model_score_ctx:
+                with self.assertLogs(level='WARNING') as logContext:
+                    patch_dict['fetch_google_scores'].return_value = []
+                    patch_dict['is_returning_non_zero_for_temperature'].return_value = False
+                    model_score_ctx.return_value = False
+                    score_calculator.run(1, date.today(), date.today())
+                self.assertListEqual(logContext.output, ['WARNING:root:Google API has returned zero for the term temperature. Not fetching scores'])
+
     def test_failed_retrieval_of_google_scores(self):
         """
         Scenario: Test run function to attempt calculating model score for a specific date
@@ -79,8 +114,12 @@ class ScoreCalculatorTestCase(TestCase):
             model_function.average_window_size = 1
             model_function.has_confidence_interval = False
             model_function.save()
-            with patch.object(GoogleApiClient, 'fetch_google_scores', lambda s, x, y, z: []):
+            with patch.multiple(
+                    GoogleApiClient, fetch_google_scores=DEFAULT, is_returning_non_zero_for_temperature=DEFAULT
+            ) as patch_dict:
                 with self.assertLogs(level='ERROR') as logContext, self.assertRaises(RuntimeError) as errorCtx:
+                    patch_dict['fetch_google_scores'].return_value = []
+                    patch_dict['is_returning_non_zero_for_temperature'].return_value = True
                     score_calculator.run(1, date.today(), date.today())
                 self.assertListEqual(logContext.output, ['ERROR:root:Retrieval of Google scores failed'])
                 self.assertTrue('Retry call to Google API' in str(errorCtx.exception))

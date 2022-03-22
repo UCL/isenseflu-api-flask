@@ -21,7 +21,7 @@
 """
 
 from datetime import date, timedelta
-from logging import ERROR, INFO, log, basicConfig
+from logging import ERROR, INFO, WARNING, log, basicConfig
 from os import getenv
 from typing import List
 
@@ -50,13 +50,16 @@ def run(model_id: int, start: date, end: date):  # pylint: disable=too-many-loca
     if missing_google_range and missing_google_list:
         batch = get_google_batch(model_id, missing_google_range)
         api_client = GoogleApiClient()
-        for terms, start_date, end_date in batch:
-            batch_scores = api_client.fetch_google_scores(terms, start_date, end_date)
-            if not batch_scores:
-                log(ERROR, 'Retrieval of Google scores failed')
-                raise RuntimeError('Retry call to Google API')
-            set_google_scores(batch_scores)
-        set_and_verify_google_dates(model_id, missing_google_list)  # Raise an error if missing data
+        if api_client.is_returning_non_zero_for_temperature(end):
+            for terms, start_date, end_date in batch:
+                batch_scores = api_client.fetch_google_scores(terms, start_date, end_date)
+                if not batch_scores:
+                    log(ERROR, 'Retrieval of Google scores failed')
+                    raise RuntimeError('Retry call to Google API')
+                set_google_scores(batch_scores)
+            set_and_verify_google_dates(model_id, missing_google_list)  # Raise an error if missing data
+        else:
+            log(WARNING, 'Google API has returned zero for the term temperature. Not fetching scores')
     else:
         log(INFO, 'Google scores have already been collected for this time period')
     missing_model_dates = get_dates_missing_model_score(model_id, start, end)

@@ -125,3 +125,35 @@ class GoogleApiClient:
         Displays current status of the client in relation to API limits
         """
         return self.block_until is None or self.block_until <= datetime.today()
+
+    def is_returning_non_zero_for_temperature(self, end: date):
+        """
+        Checks whether the API returns a non-zero value for the term temperature
+        for the end date
+        """
+        start = end - timedelta(days=1)
+        graph = self.service.getTimelinesForHealth(
+            terms=['temperature'],
+            geoRestriction_region=_GEORESTRICTION_REGION,
+            time_startDate=start.strftime(_ISO_FORMAT),
+            time_endDate=end.strftime(_ISO_FORMAT),
+            timelineResolution=_TIMELINE_RESOLUTION
+        )
+        time.sleep(1)  # sleep for 1 second to avoid hitting the rate limit
+        try:
+            response = graph.execute()
+            temperature_lines = response['lines'][0]
+            temperature_value = temperature_lines['points'][1]['value']
+            if temperature_value == 0:
+                return False
+            return True
+        except HttpError as http_error:
+            data = json.loads(http_error.content.decode('utf-8'))
+            code = data['error']['code']
+            reason = data['error']['errors'][0]['reason']
+            if code == 403 and reason == 'dailyLimitExceeded':
+                self.block_until = datetime.combine(date.today() + timedelta(days=1), dtime.min)
+                raise RuntimeError('%s: blocked until %s' % (reason, self.block_until))
+            import logging
+            logging.warning(http_error)
+            return False
