@@ -98,10 +98,6 @@ class GoogleApiClient:
         """
         if not self.is_accepting_calls():
             raise RuntimeError('API client blocked until %s' % self.block_until)
-        if not self.is_returning_non_zero_for_temperature(end):
-            import logging
-            logging.warning('API returning zero for term temperature. Not saving')
-            return []
         graph = self.service.getTimelinesForHealth(
             terms=terms,
             geoRestriction_region=_GEORESTRICTION_REGION,
