@@ -194,28 +194,28 @@ class ScoreCalculatorTestCase(TestCase):
         Evaluate parameters passed to get_date_ranges_google_score function within
         _run_sched_for_model_no_set_dates
         """
-        last_date = date.today() - timedelta(days=4)
+        last_date = date.today() - timedelta(days=5)
         with self.app.app_context():
             google_date = GoogleDate(1, last_date)
             google_date.save()
             model_score = ModelScore()
             model_score.flu_model_id = 1
-            model_score.score_date = date.today() - timedelta(days=3)
+            model_score.score_date = date.today() - timedelta(days=4)
             model_score.score_value = 0.5
             model_score.region = 'e'
             model_score.save()
             with patch('scheduler.score_calculator.get_date_ranges_google_score') as patched_call:
                 patched_call.return_value = (None, None)
                 score_calculator.runsched([1], self.app)
-                patched_call.assert_called_with(1, last_date + timedelta(days=1), date.today() - timedelta(days=3))
+                patched_call.assert_called_with(1, last_date + timedelta(days=1), date.today() - timedelta(days=4))
 
     def test_runsched_get_google_batch(self):
         """
         Evaluate parameters passed to get_google_batch function in
         _run_sched_for_model_no_set_dates
         """
-        last_date = date.today() - timedelta(days=4)
-        end_date = date.today() - timedelta(days=3)
+        last_date = date.today() - timedelta(days=5)
+        end_date = date.today() - timedelta(days=4)
         with self.app.app_context():
             google_date = GoogleDate(1, last_date)
             google_date.save()
@@ -237,8 +237,8 @@ class ScoreCalculatorTestCase(TestCase):
         Evaluate parameters passed to fetch_google_scores and set_and_verify_google_dates
         functions in _run_sched_for_model_no_set_dates
         """
-        last_date = date.today() - timedelta(days=4)
-        end_date = date.today() - timedelta(days=3)
+        last_date = date.today() - timedelta(days=5)
+        end_date = date.today() - timedelta(days=4)
         with self.app.app_context():
             google_date = GoogleDate(1, last_date)
             google_date.save()

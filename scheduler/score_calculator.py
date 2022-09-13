@@ -96,7 +96,7 @@ def _run_sched_for_model_no_set_dates(model_id:int):
     last_score_date = get_last_google_date(model_id)
     date_assert = date.today() - last_score_date
     assert date_assert.days < 66, "Number of days goes beyond the limit of 2,000 lines for 30 terms"
-    expected_end_date = date.today() - timedelta(days=3)  # TODO: remove end date from the API call
+    expected_end_date = date.today() - timedelta(days=4)  # TODO: remove end date from the API call
     start = last_score_date + timedelta(days=1)
     if last_score_date < expected_end_date:
         missing_google_range, missing_google_list = get_date_ranges_google_score(model_id, start, expected_end_date)
