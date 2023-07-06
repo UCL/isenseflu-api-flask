@@ -11,5 +11,5 @@ MarkupSafe==2.0.1
 numpy==1.19.5
 oct2py==5.2.0
 psycopg2-binary==2.8.6
-scipy==1.5.4
+scipy==1.10.0
 stompest==2.3.0
