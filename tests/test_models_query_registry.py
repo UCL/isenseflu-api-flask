@@ -2,7 +2,7 @@
  Tests query functions to access model data
 """
 
-from datetime import date
+from datetime import date, timedelta
 from unittest import TestCase
 
 from app import create_app, DB
@@ -11,7 +11,7 @@ from app.models import FluModelGoogleTerm, GoogleDate, GoogleScore, GoogleTerm, 
 from app.models_query_registry import get_existing_google_dates, get_google_terms_for_model_id, \
     set_google_date_for_model_id, set_google_scores_for_term, get_existing_model_dates, set_model_score, \
     get_model_function, get_google_terms_and_scores, get_google_terms_and_averages, \
-    get_flu_model_for_id, get_public_flu_models, get_default_flu_model, get_default_flu_model_30days, \
+    get_flu_model_for_id, get_public_flu_models, get_default_flu_model, get_default_flu_model_half_year, \
     get_rate_thresholds, get_flu_models_for_ids, get_all_flu_models, get_flu_model_for_model_region_and_dates, \
     get_flu_model_for_model_id_and_dates
 
@@ -335,20 +335,20 @@ class ModelsTestCase(TestCase):
             model_function.save()
             DB.session.add(default_model)
             DB.session.commit()
-            for i in range(1, 32):
+            for i in range(1, 185):
                 model_score = ModelScore()
                 model_score.flu_model_id = 1
-                model_score.score_date = date(2018, 1, i)
+                model_score.score_date = date(2018, 1, 1) + timedelta(days=i)
                 model_score.score_value = i/(10+i)
                 model_score.region = 'e'
                 model_score.save()
-            result = get_default_flu_model_30days()
-            self.assertEqual(result[0]['average_score'], 0.5723146873461765)
-            self.assertEqual(result[0]['start_date'], date(2018, 1, 2))
-            self.assertEqual(result[0]['end_date'], date(2018, 1, 31))
+            result = get_default_flu_model_half_year()
+            self.assertEqual(result[0]['average_score'], 0.8492066894969448)
+            self.assertEqual(result[0]['start_date'], date(2018, 1, 4))
+            self.assertEqual(result[0]['end_date'], date(2018, 7, 4))
             self.assertEqual(result[0]['name'], 'Model 1')
             self.assertEqual(result[0]['id'], 1)
-            self.assertEqual(len(result[1]), 30)
+            self.assertEqual(len(result[1]), 182)
 
     def test_get_rate_thresholds(self):
         """

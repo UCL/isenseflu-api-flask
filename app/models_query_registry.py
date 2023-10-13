@@ -32,8 +32,8 @@ from app.models import FluModel, ModelScore, GoogleDate, GoogleScore, GoogleTerm
     FluModelGoogleTerm, ModelFunction, DefaultFluModel, RateThresholdSet, TokenInfo
 
 
-def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
-    """ Returns the last 30 days of data for the default Flu Model """
+def get_default_flu_model_half_year() -> Tuple[Dict, List[ModelScore]]:
+    """ Returns the last half a year of data for the default Flu Model """
     default_flu_model = FluModel.query.filter_by(is_public=True, is_displayed=True)\
         .join(DefaultFluModel)\
         .filter(DefaultFluModel.flu_model_id == FluModel.id)\
@@ -42,7 +42,7 @@ def get_default_flu_model_30days() -> Tuple[Dict, List[ModelScore]]:
         return None, None
     model_scores = ModelScore.query.filter(ModelScore.flu_model_id == default_flu_model.id)\
         .order_by(ModelScore.score_date.desc())\
-        .limit(30)\
+        .limit(182)\
         .all()
     if not model_scores:
         return None, None

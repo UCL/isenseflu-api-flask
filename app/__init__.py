@@ -40,7 +40,7 @@ def create_app(config_name):
     # pylint: disable=unused-import
     from app.models_query_registry import get_public_flu_models, \
         get_model_scores_for_dates, get_model_function, get_default_flu_model, \
-        get_default_flu_model_30days, get_rate_thresholds, get_flu_models_for_ids, \
+        get_default_flu_model_half_year, get_rate_thresholds, get_flu_models_for_ids, \
         has_valid_token, set_model_display, get_all_flu_models, \
         get_flu_model_for_model_region_and_dates, get_flu_model_for_model_id_and_dates
     from app.response_template_registry import build_root_plink_twlink_response, \
@@ -56,7 +56,7 @@ def create_app(config_name):
         """ Default route (/). Returns the last 30 days of model scores
         for the default flu model
         """
-        model_data, model_scores = get_default_flu_model_30days()
+        model_data, model_scores = get_default_flu_model_half_year()
         flu_models = get_public_flu_models()
         if not model_data or not flu_models:
             return '', status.HTTP_204_NO_CONTENT
