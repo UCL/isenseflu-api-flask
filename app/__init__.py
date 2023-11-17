@@ -60,6 +60,15 @@ def create_app(config_name):
         flu_models = get_public_flu_models()
         if not model_data or not flu_models:
             return '', status.HTTP_204_NO_CONTENT
+        # Set default smoothing to 3 day window
+        smoothing = 3
+        smooth_scores = []
+        for mod_score in model_scores:
+            copied_score = copy(mod_score)
+            copied_score.score_value, copied_score.confidence_interval_upper, \
+                copied_score.confidence_interval_lower = mod_score.moving_avg(smoothing)
+            smooth_scores.append(copied_score)
+        model_scores = smooth_scores
         response = build_root_plink_twlink_response(
             model_list=flu_models,
             rate_thresholds=get_rate_thresholds(model_data['start_date']),
